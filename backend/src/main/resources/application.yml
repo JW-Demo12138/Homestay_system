@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: homestay-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/homestay?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 2MB
+  redis:
+    host: localhost  # Redis服务器地址
+    port: 6379       # Redis端口
+    timeout: 3000    # 连接超时时间（毫秒）
+  
+mybatis-plus:
+  # mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.homestay.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+server:
+  port: 8080
+
+# JWT配置
+jwt:
+  secret: homestay-secret-key
+  expire: 7200 # 2小时，单位秒
+  header: Authorization
+
+# 百度地图配置
+baidu:
+  map:
+    ak: jWDDImaAiMbGgbQkpbXF96X7emdjovxB

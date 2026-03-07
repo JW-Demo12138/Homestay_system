@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homestay.mapper.OrderMapper">
+    <resultMap id="BaseResultMap" type="com.homestay.entity.Order">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="homestay_id" property="homestayId" jdbcType="BIGINT"/>
+        <result column="check_in_date" property="checkInDate" jdbcType="DATE"/>
+        <result column="check_out_date" property="checkOutDate" jdbcType="DATE"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="pay_time" property="payTime" jdbcType="TIMESTAMP"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <resultMap id="OrderWithHomestayMap" type="com.homestay.entity.Order" extends="BaseResultMap">
+        <association property="homestay" javaType="com.homestay.entity.Homestay">
+            <id column="h_id" property="id"/>
+            <result column="h_name" property="name"/>
+            <result column="h_address" property="address"/>
+            <result column="h_image_url" property="imageUrl"/>
+            <result column="h_owner_id" property="ownerId"/>
+        </association>
+    </resultMap>
+    
+    <select id="selectOrdersByLandlordId" resultMap="OrderWithHomestayMap">
+        SELECT 
+            o.*,
+            h.id as h_id,
+            h.name as h_name,
+            h.address as h_address,
+            h.image_url as h_image_url,
+            h.owner_id as h_owner_id
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        WHERE h.owner_id = #{landlordId}
+        ORDER BY o.create_time DESC
+    </select>
+    
+    <select id="selectOrdersByUserId" resultMap="OrderWithHomestayMap">
+        SELECT 
+            o.*,
+            h.id as h_id,
+            h.name as h_name,
+            h.address as h_address,
+            h.image_url as h_image_url,
+            h.owner_id as h_owner_id
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        WHERE o.user_id = #{userId}
+        ORDER BY o.create_time DESC
+    </select>
+    
+    <select id="selectOrdersByLandlordIdWithFilter" resultMap="OrderWithHomestayMap">
+        SELECT 
+            o.*,
+            h.id as h_id,
+            h.name as h_name,
+            h.address as h_address,
+            h.image_url as h_image_url,
+            h.owner_id as h_owner_id
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        WHERE h.owner_id = #{landlordId}
+        <if test="status != null and status != ''">
+            AND o.status = #{status}
+        </if>
+        <if test="homestayName != null and homestayName != ''">
+            AND h.name LIKE CONCAT('%', #{homestayName}, '%')
+        </if>
+        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+            AND o.check_in_date &gt;= #{startDate} AND o.check_out_date &lt;= #{endDate}
+        </if>
+        <choose>
+            <when test="sortBy != null and sortBy != '' and sortOrder != null and sortOrder != ''">
+                ORDER BY 
+                    <choose>
+                        <when test="sortBy == 'price'">o.price</when>
+                        <when test="sortBy == 'checkInDate'">o.check_in_date</when>
+                        <otherwise>o.create_time</otherwise>
+                    </choose>
+                <if test="sortOrder == 'desc'">
+                    DESC
+                </if>
+                <if test="sortOrder == 'asc'">
+                    ASC
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY o.create_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{start}, #{pageSize}
+    </select>
+    
+    <select id="countOrdersByLandlordIdWithFilter" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        WHERE h.owner_id = #{landlordId}
+        <if test="status != null and status != ''">
+            AND o.status = #{status}
+        </if>
+        <if test="homestayName != null and homestayName != ''">
+            AND h.name LIKE CONCAT('%', #{homestayName}, '%')
+        </if>
+        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+            AND o.check_in_date &gt;= #{startDate} AND o.check_out_date &lt;= #{endDate}
+        </if>
+    </select>
+</mapper>

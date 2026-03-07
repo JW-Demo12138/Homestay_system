@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homestay.mapper.HomestayFeatureMapper">
+    
+    <!-- 根据标签获取专题数据 -->
+    <select id="selectFeatureTopic" resultType="java.util.Map">
+        SELECT DISTINCT
+            h.id,
+            h.name,
+            h.price,
+            h.image_url,
+            h.address,
+            h.create_time
+        FROM
+            homestay_feature f
+        JOIN
+            homestay h ON h.id = f.homestay_id
+        WHERE
+            f.tag = #{tag}
+            AND f.status = 1
+            AND h.status = 1
+        ORDER BY
+            h.create_time DESC
+    </select>
+    
+</mapper>

@@ -1,0 +1,3 @@
+ALTER TABLE homestay
+MODIFY latitude DOUBLE NULL,
+MODIFY longitude DOUBLE NULL;
