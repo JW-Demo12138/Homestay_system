@@ -16,7 +16,7 @@
     <div class="content">
       <div v-if="loading" class="loading">加载中...</div>
       <div v-else-if="topic.homestays.length === 0" class="empty">
-        <h2>暂无「{{ tag }}」民宿</h2>
+        <h2>暂无「{{ tag }}」相关的民宿</h2>
         <p>可以去首页看看其他精选内容</p>
         <button @click="goHome">去首页</button>
       </div>
@@ -46,7 +46,8 @@
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import axios from "axios"
+import { experienceAPI } from '@/api/experience'
+import { homestayAPI } from '@/api/homestay'
 
 const route = useRoute()
 const router = useRouter()
@@ -65,43 +66,43 @@ const tag = computed(() => route.query.tag || "精选专题")
 const defaultBanner = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'
 const defaultImg = 'https://images.unsplash.com/photo-1590490360268-837e83a78017?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80'
 
-const loadData = (tagValue) => {
+const loadData = async (tagValue) => {
   loading.value = true
 
-  axios.get("/api/feature/topic", {
-    params: { tag: tagValue }
-  }).then(res => {
-
-    const data = res.data.data
-
-    // 后端没数据
-    if (!data || data.length === 0) {
-      topic.value = {
-        title: tagValue,
-        description: "探索更多优质民宿，发现属于你的旅行灵感",
-        bannerImage: defaultBanner,
-        homestays: []
-      }
-      return
+  try {
+    // 获取该类型的体验项目
+    const experiencePage = await experienceAPI.getList({ type: tagValue, status: 1 })
+    const experiences = experiencePage?.records || []
+    
+    // 提取关联的民宿ID
+    const homestayIds = [...new Set(experiences.map(exp => exp.homestayId).filter(id => id))]
+    
+    let homestays = []
+    if (homestayIds.length > 0) {
+      // 获取所有上架的民宿
+      const homestayPage = await homestayAPI.getList({ page: 1, size: 100 })
+      const allHomestays = homestayPage?.records || []
+      // 筛选出与体验项目关联的民宿
+      homestays = allHomestays.filter(homestay => homestayIds.includes(homestay.id))
     }
 
     topic.value = {
       title: tagValue,
-      description: "为你精选优质民宿推荐",
+      description: "探索乡村特色体验，发现属于你的旅行灵感",
       bannerImage: defaultBanner,
-      homestays: data
+      homestays: homestays
     }
-
-  }).catch(() => {
+  } catch (error) {
+    console.error('加载体验项目失败:', error)
     topic.value = {
       title: tagValue,
       description: "专题加载失败",
       bannerImage: defaultBanner,
       homestays: []
     }
-  }).finally(() => {
+  } finally {
     loading.value = false
-  })
+  }
 }
 
 const handleImgError = (e) => {

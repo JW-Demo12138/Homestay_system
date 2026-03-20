@@ -1,0 +1,28 @@
+-- Create experience table
+CREATE TABLE `experience` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'Experience ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Experience name',
+  `type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Experience type',
+  `homestay_id` bigint DEFAULT NULL COMMENT 'Related homestay ID',
+  `price` decimal(10,2) NOT NULL COMMENT 'Price',
+  `duration` int NOT NULL COMMENT 'Duration in minutes',
+  `available_time` varchar(500) COLLATE utf8mb4_unicode_ci COMMENT 'Available time slots',
+  `description` text COLLATE utf8mb4_unicode_ci COMMENT 'Description',
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Location',
+  `longitude` double DEFAULT NULL COMMENT 'Longitude',
+  `latitude` double DEFAULT NULL COMMENT 'Latitude',
+  `radius` int DEFAULT NULL COMMENT 'Location radius in meters',
+  `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Cover image URL',
+  `images` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Image URLs (comma separated)',
+  `status` tinyint NOT NULL DEFAULT '2' COMMENT 'Status: 0-Offline, 1-Online, 2-Pending review',
+  `owner_id` bigint NOT NULL COMMENT 'Landlord ID',
+  `reject_reason` text COLLATE utf8mb4_unicode_ci COMMENT 'Rejection reason',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  KEY `idx_homestay_id` (`homestay_id`),
+  KEY `idx_owner_id` (`owner_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_price` (`price`),
+  KEY `idx_type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Experience table';

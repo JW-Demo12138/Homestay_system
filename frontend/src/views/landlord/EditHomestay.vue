@@ -44,56 +44,16 @@
             </el-form-item>
             
             <el-form-item label="地址（必填）" prop="address">
-              <div class="address-input-container">
-                <el-input
-                  v-model="form.address"
-                  placeholder="请输入详细地址，如：北京市朝阳区建国路"
-                  maxlength="200"
-                  show-word-limit
-                  @input="handleAddressInput"
-                  @blur="handleAddressBlur"
-                  @focus="handleAddressFocus"
-                >
-                  <template #append>
-                    <el-button @click="getCurrentLocation" type="primary" size="small">
-                      <el-icon><Position /></el-icon>
-                      当前位置
-                    </el-button>
-                  </template>
-                </el-input>
-                <!-- 地址建议下拉列表 -->
-                <div v-if="showAddressSuggestions && addressSuggestions.length > 0" class="address-suggestions">
-                  <div 
-                    v-for="(suggestion, index) in addressSuggestions" 
-                    :key="index"
-                    class="suggestion-item"
-                    @click="selectAddress(suggestion)"
-                  >
-                    <el-icon class="suggestion-icon"><MapLocation /></el-icon>
-                    <span class="suggestion-text">{{ suggestion }}</span>
-                  </div>
-                </div>
-              </div>
+              <el-input
+                v-model="form.address"
+                placeholder="请输入详细地址，如：北京市朝阳区建国路"
+                maxlength="200"
+                show-word-limit
+              />
             </el-form-item>
             
             <el-form-item label="城市" prop="city">
-              <el-input v-model="form.city" placeholder="城市会根据地址自动填充" readonly />
-            </el-form-item>
-            
-            <el-form-item>
-              <el-button type="primary" @click="getCoords" :loading="loadingCoords">
-                <el-icon><Location /></el-icon>
-                自动获取坐标
-              </el-button>
-              <span class="tip">点击后会根据地址自动填充经纬度</span>
-            </el-form-item>
-            
-            <el-form-item label="经度" prop="longitude">
-              <el-input v-model="form.longitude" placeholder="经度" readonly />
-            </el-form-item>
-            
-            <el-form-item label="纬度" prop="latitude">
-              <el-input v-model="form.latitude" placeholder="纬度" readonly />
+              <el-input v-model="form.city" placeholder="请输入城市" />
             </el-form-item>
             
             <el-form-item>
@@ -224,7 +184,7 @@
               <div v-if="uploadedImages.length > 0" class="uploaded-images">
                 <h4>已上传图片</h4>
                 <div class="image-list">
-                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image)" alt="民宿图片" />
+                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image, true)" alt="民宿图片" />
                     <div class="image-actions">                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
                       <el-button size="small" type="danger" @click="removeImage(index)">删除</el-button>
                     </div>
@@ -276,7 +236,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { homestayAPI } from '@/api/homestay'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Position, Location, MapLocation } from '@element-plus/icons-vue'
+
 import { getImageUrl } from '@/utils'
 
 const router = useRouter()
@@ -298,21 +258,13 @@ watch(() => localStorage.getItem('accessToken'), () => {
 
 const formRef = ref(null)
 const loading = ref(false)
-const loadingCoords = ref(false)
 const activeStep = ref(0)
-
-// 地址建议相关
-const showAddressSuggestions = ref(false)
-const addressSuggestions = ref([])
-const addressInputTimer = ref(null)
 
 // 表单数据
 const form = reactive({
   name: '',
   address: '',
   city: '',
-  longitude: null,
-  latitude: null,
   price: null,
   roomType: '',
   facility: '',
@@ -444,181 +396,7 @@ const removeImage = (index) => {
   }
 }
 
-// 地址和坐标
-const getAddressSuggestions = async (keyword) => {
-  if (!keyword || keyword.length < 2) {
-    addressSuggestions.value = []
-    return
-  }
-  
-  try {
-    if (!window.BMap) {
-      ElMessage.error('百度地图API加载失败')
-      return
-    }
-    
-    // 使用百度地图的本地搜索服务，不指定城市以搜索全国范围
-    const localSearch = new window.BMap.LocalSearch('', {
-      onSearchComplete: (results) => {
-        if (localSearch.getStatus() === window.BMAP_STATUS_SUCCESS) {
-          const suggestions = []
-          for (let i = 0; i < results.getCurrentNumPois(); i++) {
-            const poi = results.getPoi(i)
-            // 显示地点名称和地址，格式：地点名称 (地址)
-            const suggestionText = `${poi.title} (${poi.address})`
-            suggestions.push(suggestionText)
-          }
-          addressSuggestions.value = suggestions
-          showAddressSuggestions.value = true
-        }
-      }
-    })
-    
-    localSearch.search(keyword)
-  } catch (error) {
-    console.error('获取地址建议失败:', error)
-    addressSuggestions.value = []
-  }
-}
 
-// 地址输入处理
-const handleAddressInput = (value) => {
-  clearTimeout(addressInputTimer.value)
-  addressInputTimer.value = setTimeout(() => {
-    getAddressSuggestions(value)
-  }, 300)
-}
-
-// 地址输入框获得焦点
-const handleAddressFocus = () => {
-  if (form.address) {
-    getAddressSuggestions(form.address)
-  }
-}
-
-// 地址输入框失去焦点
-const handleAddressBlur = () => {
-  // 延迟隐藏，以便点击建议项
-  setTimeout(() => {
-    showAddressSuggestions.value = false
-  }, 200)
-}
-
-// 选择地址建议
-const selectAddress = (suggestion) => {
-  // 解析地址建议，提取地址部分
-  const addressMatch = suggestion.match(/\((.*)\)$/)
-  if (addressMatch) {
-    form.address = addressMatch[1]
-  } else {
-    form.address = suggestion
-  }
-  showAddressSuggestions.value = false
-  // 自动提取城市
-  const cityMatch = form.address.match(/^(\S+[省市自治区])/)
-  if (cityMatch) {
-    form.city = cityMatch[1]
-  }
-  // 自动获取坐标
-  getCoords()
-}
-
-// 获取当前位置
-const getCurrentLocation = () => {
-  if (navigator.geolocation) {
-    loadingCoords.value = true
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        form.latitude = latitude
-        form.longitude = longitude
-        
-        try {
-          if (!window.BMap) {
-            ElMessage.error('百度地图API加载失败')
-            loadingCoords.value = false
-            return
-          }
-          
-          // 使用百度地图的逆地理编码服务
-          const geocoder = new window.BMap.Geocoder()
-          const point = new window.BMap.Point(longitude, latitude)
-          
-          geocoder.getLocation(point, (result) => {
-            loadingCoords.value = false
-            if (result) {
-              form.address = result.address
-              form.city = result.addressComponents.city
-              ElMessage.success('获取当前位置成功')
-            } else {
-              ElMessage.error('获取地址信息失败')
-            }
-          })
-        } catch (error) {
-          loadingCoords.value = false
-          console.error('逆地理编码失败:', error)
-          ElMessage.error('获取地址信息失败')
-        }
-      },
-      (error) => {
-        loadingCoords.value = false
-        console.error('获取位置失败:', error)
-        ElMessage.error('获取位置失败，请检查定位权限')
-      }
-    )
-  } else {
-    ElMessage.error('您的浏览器不支持地理定位')
-  }
-}
-
-const getCoords = () => {
-  if (!form.address) {
-    ElMessage.warning('请先输入地址')
-    return
-  }
-  
-  loadingCoords.value = true
-  try {
-    if (!window.BMap) {
-      ElMessage.error('百度地图API加载失败')
-      loadingCoords.value = false
-      return
-    }
-    
-    // 使用百度地图的地址解析服务
-    const geocoder = new window.BMap.Geocoder()
-    geocoder.getPoint(form.address, (point) => {
-      loadingCoords.value = false
-      if (point) {
-        form.longitude = point.lng
-        form.latitude = point.lat
-        ElMessage.success('获取坐标成功')
-      } else {
-        ElMessage.error('获取坐标失败，请检查地址是否正确')
-      }
-    }, form.city)
-  } catch (error) {
-    loadingCoords.value = false
-    console.error('获取坐标失败:', error)
-    ElMessage.error('获取坐标失败，请检查地址是否正确')
-  }
-}
-
-// 防抖函数
-const debounce = (func, delay) => {
-  let timeoutId
-  return (...args) => {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => func.apply(null, args), delay)
-  }
-}
-
-// 监听地址变化自动获取坐标
-watch(() => form.address, debounce((newAddress) => {
-  if (newAddress && newAddress.length > 5) {
-    getCoords()
-  }
-}, 800))
 
 // 表单验证规则
 const rules = {
@@ -726,13 +504,6 @@ const nextStep = async () => {
       console.log('开始验证基础信息')
       await validateFields(['name', 'address'])
       console.log('基础信息验证通过')
-      
-      if (!form.longitude || !form.latitude) {
-        console.log('经纬度为空，显示警告')
-        ElMessage.warning('请获取坐标')
-        return
-      }
-      console.log('经纬度已获取:', form.longitude, form.latitude)
     }
     
     if (activeStep.value === 1) {
@@ -776,12 +547,6 @@ const handleSubmit = async () => {
   try {
     // 验证所有字段
     await formRef.value.validate()
-    
-    // 检查经纬度
-    if (!form.longitude || !form.latitude) {
-      ElMessage.warning('请获取坐标')
-      return
-    }
     
     // 检查图片
     if (uploadedImages.value.length === 0) {
@@ -1005,47 +770,6 @@ const handleLogout = async () => {
   font-size: 12px;
   color: #999;
   margin-left: 10px;
-}
-
-.address-input-container {
-  position: relative;
-  width: 100%;
-}
-
-.address-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.suggestion-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-  background-color: #f5f7fa;
-}
-
-.suggestion-icon {
-  margin-right: 8px;
-  color: #667eea;
-}
-
-.suggestion-text {
-  flex: 1;
-  font-size: 14px;
 }
 
 /* 优化整体UI */

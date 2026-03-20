@@ -31,6 +31,10 @@ public interface AuthService {
      */
     Result register(User user);
 
+
+
+
+
     /**
      * 刷新令牌
      * <p>

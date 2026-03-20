@@ -27,6 +27,7 @@
           <el-step title="基础信息" />
           <el-step title="房源信息" />
           <el-step title="媒体与发布" />
+          <el-step title="体验项目" />
         </el-steps>
         
         <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
@@ -52,48 +53,33 @@
                   show-word-limit
                   @input="handleAddressInput"
                   @blur="handleAddressBlur"
-                  @focus="handleAddressFocus"
+                />
+                <el-button type="primary" @click="getCurrentLocation" style="margin-top: 10px;">
+                  获取当前位置
+                </el-button>
+              </div>
+              <!-- 地址搜索建议 -->
+              <div v-if="addressSuggestions.length > 0" class="address-suggestions">
+                <div
+                  v-for="(suggestion, index) in addressSuggestions"
+                  :key="index"
+                  class="suggestion-item"
+                  @click="selectAddress(suggestion)"
                 >
-                  <template #append>
-                    <el-button @click="getCurrentLocation" type="primary" size="small">
-                      <el-icon><Position /></el-icon>
-                      当前位置
-                    </el-button>
-                  </template>
-                </el-input>
-                <!-- 地址建议下拉列表 -->
-                <div v-if="showAddressSuggestions && addressSuggestions.length > 0" class="address-suggestions">
-                  <div 
-                    v-for="(suggestion, index) in addressSuggestions" 
-                    :key="index"
-                    class="suggestion-item"
-                    @click="selectAddress(suggestion)"
-                  >
-                    <el-icon class="suggestion-icon"><MapLocation /></el-icon>
-                    <span class="suggestion-text">{{ suggestion }}</span>
-                  </div>
+                  {{ suggestion.name }}
+                </div>
+              </div>
+              <!-- 地图容器 -->
+              <div v-if="showMap" class="map-container">
+                <div id="locationMap" style="width: 100%; height: 400px;"></div>
+                <div class="map-tip">
+                  可拖动地图上的标记来调整位置
                 </div>
               </div>
             </el-form-item>
             
             <el-form-item label="城市" prop="city">
-              <el-input v-model="form.city" placeholder="城市会根据地址自动填充" readonly />
-            </el-form-item>
-            
-            <el-form-item>
-              <el-button type="primary" @click="getCoords" :loading="loadingCoords">
-                <el-icon><Location /></el-icon>
-                自动获取坐标
-              </el-button>
-              <span class="tip">点击后会根据地址自动填充经纬度</span>
-            </el-form-item>
-            
-            <el-form-item label="经度" prop="longitude">
-              <el-input v-model="form.longitude" placeholder="经度" readonly />
-            </el-form-item>
-            
-            <el-form-item label="纬度" prop="latitude">
-              <el-input v-model="form.latitude" placeholder="纬度" readonly />
+              <el-input v-model="form.city" placeholder="请输入城市" />
             </el-form-item>
             
             <el-form-item>
@@ -224,7 +210,7 @@
               <div v-if="uploadedImages.length > 0" class="uploaded-images">
                 <h4>已上传图片</h4>
                 <div class="image-list">
-                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image)" alt="民宿图片" />
+                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image, true)" alt="民宿图片" />
                     <div class="image-actions">                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
                       <el-button size="small" type="danger" @click="removeImage(index)">删除</el-button>
                     </div>
@@ -257,6 +243,17 @@
             </el-form-item>
             
             <el-form-item>
+              <el-button type="primary" @click="goToCreateExperience" style="margin-left: 10px;">
+                <el-icon><Star /></el-icon>
+                创建体验项目
+              </el-button>
+              <el-button @click="goToMyExperiences" style="margin-left: 10px;">
+                <el-icon><Star /></el-icon>
+                管理体验项目
+              </el-button>
+            </el-form-item>
+            
+            <el-form-item>
               <el-button @click="prevStep">上一步</el-button>
               <el-button @click="handleReset" style="margin-left: 10px;">重置</el-button>
               <el-button type="primary" @click="handleSubmit" :loading="loading" style="margin-left: 10px;">
@@ -264,6 +261,31 @@
               </el-button>
               <el-button @click="saveDraft" style="margin-left: 10px;">
                 保存草稿
+              </el-button>
+            </el-form-item>
+          </el-card>
+          
+          <!-- 体验项目卡片 -->
+          <el-card class="form-card" v-if="activeStep === 3">
+            <template #header>
+              <div class="card-header">
+                <h3>体验项目</h3>
+                <span class="card-tip">创建与民宿相关的乡村特色体验项目</span>
+              </div>
+            </template>
+            
+            <el-form-item>
+              <el-button type="primary" @click="goToCreateExperience" style="margin-left: 10px;">
+                <el-icon><Star /></el-icon>
+                创建体验项目
+              </el-button>
+              <el-button @click="goToMyExperiences" style="margin-left: 10px;">
+                <el-icon><Star /></el-icon>
+                管理体验项目
+              </el-button>
+              <el-button @click="finishCreation" style="margin-left: 10px;">
+                <el-icon><Check /></el-icon>
+                完成发布
               </el-button>
             </el-form-item>
           </el-card>
@@ -278,10 +300,9 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { homestayAPI } from '@/api/homestay'
-import { geocodingAPI } from '@/api/geocoding'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Position, Location, MapLocation } from '@element-plus/icons-vue'
 import { getImageUrl } from '@/utils'
+import { Star } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -289,7 +310,63 @@ const userStore = useUserStore()
 // 组件挂载时更新上传请求头
 onMounted(() => {
   updateUploadHeaders()
+  // 初始化默认地图
+  initDefaultMap()
 })
+
+// 初始化默认地图
+const initDefaultMap = () => {
+  // 确保高德地图 API 加载完成
+  if (typeof AMap === 'undefined') {
+    // 如果 API 未加载，延迟初始化
+    setTimeout(initDefaultMap, 1000)
+    return
+  }
+  
+  // 默认位置：北京市
+  const defaultLng = 116.404
+  const defaultLat = 39.915
+  
+  // 初始化地图
+  AMap.plugin(['AMap.Map', 'AMap.Marker'], function() {
+    map = new AMap.Map('locationMap', {
+      zoom: 10,
+      center: [defaultLng, defaultLat]
+    })
+    
+    // 添加标记
+    marker = new AMap.Marker({
+      position: [defaultLng, defaultLat],
+      draggable: true,
+      cursor: 'move'
+    })
+    
+    map.add(marker)
+    
+    // 监听标记拖动结束事件
+    marker.on('dragend', function(e) {
+      const position = e.lnglat
+      form.longitude = position.getLng()
+      form.latitude = position.getLat()
+      
+      // 逆地理编码获取新地址
+      AMap.plugin('AMap.Geocoder', function() {
+        geocoder = new AMap.Geocoder({
+          radius: 1000,
+          extensions: "all"
+        })
+        
+        geocoder.getAddress([position.getLng(), position.getLat()], function(status, result) {
+          if (status === 'complete' && result.info === 'OK') {
+            const address = result.regeocode.formattedAddress
+            form.address = address
+            form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+          }
+        })
+      })
+    })
+  })
+}
 
 // 监听token变化，更新上传请求头
 watch(() => localStorage.getItem('accessToken'), () => {
@@ -298,29 +375,33 @@ watch(() => localStorage.getItem('accessToken'), () => {
 
 const formRef = ref(null)
 const loading = ref(false)
-const loadingCoords = ref(false)
 const activeStep = ref(0)
-
-// 地址建议相关
-const showAddressSuggestions = ref(false)
-const addressSuggestions = ref([])
-const addressInputTimer = ref(null)
 
 // 表单数据
 const form = reactive({
   name: '',
   address: '',
   city: '',
-  longitude: null,
-  latitude: null,
   price: null,
   roomType: '',
   facility: '',
   images: [],
   coverImage: '',
   description: '',
-  status: 1
+  status: 1,
+  longitude: '',
+  latitude: ''
 })
+
+// 地址搜索相关
+const addressSuggestions = ref([])
+const showMap = ref(true)
+let map = null
+let marker = null
+let geocoder = null
+let autoComplete = null
+let searchTimer = null
+const searchCache = new Map()
 
 // 房型选项
 const roomTypeOptions = ['大床房', '双床房', '家庭房', '套房', '别墅', '公寓']
@@ -444,181 +525,7 @@ const removeImage = (index) => {
   }
 }
 
-// 地址和坐标
-const getAddressSuggestions = async (keyword) => {
-  if (!keyword || keyword.length < 2) {
-    addressSuggestions.value = []
-    return
-  }
-  
-  try {
-    if (!window.BMap) {
-      ElMessage.error('百度地图API加载失败')
-      return
-    }
-    
-    // 使用百度地图的本地搜索服务，不指定城市以搜索全国范围
-    const localSearch = new window.BMap.LocalSearch('', {
-      onSearchComplete: (results) => {
-        if (localSearch.getStatus() === window.BMAP_STATUS_SUCCESS) {
-          const suggestions = []
-          for (let i = 0; i < results.getCurrentNumPois(); i++) {
-            const poi = results.getPoi(i)
-            // 显示地点名称和地址，格式：地点名称 (地址)
-            const suggestionText = `${poi.title} (${poi.address})`
-            suggestions.push(suggestionText)
-          }
-          addressSuggestions.value = suggestions
-          showAddressSuggestions.value = true
-        }
-      }
-    })
-    
-    localSearch.search(keyword)
-  } catch (error) {
-    console.error('获取地址建议失败:', error)
-    addressSuggestions.value = []
-  }
-}
 
-// 地址输入处理
-const handleAddressInput = (value) => {
-  clearTimeout(addressInputTimer.value)
-  addressInputTimer.value = setTimeout(() => {
-    getAddressSuggestions(value)
-  }, 300)
-}
-
-// 地址输入框获得焦点
-const handleAddressFocus = () => {
-  if (form.address) {
-    getAddressSuggestions(form.address)
-  }
-}
-
-// 地址输入框失去焦点
-const handleAddressBlur = () => {
-  // 延迟隐藏，以便点击建议项
-  setTimeout(() => {
-    showAddressSuggestions.value = false
-  }, 200)
-}
-
-// 选择地址建议
-const selectAddress = (suggestion) => {
-  // 解析地址建议，提取地址部分
-  const addressMatch = suggestion.match(/\((.*)\)$/)
-  if (addressMatch) {
-    form.address = addressMatch[1]
-  } else {
-    form.address = suggestion
-  }
-  showAddressSuggestions.value = false
-  // 自动提取城市
-  const cityMatch = form.address.match(/^(\S+[省市自治区])/)
-  if (cityMatch) {
-    form.city = cityMatch[1]
-  }
-  // 自动获取坐标
-  getCoords()
-}
-
-// 获取当前位置
-const getCurrentLocation = () => {
-  if (navigator.geolocation) {
-    loadingCoords.value = true
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        form.latitude = latitude
-        form.longitude = longitude
-        
-        try {
-          if (!window.BMap) {
-            ElMessage.error('百度地图API加载失败')
-            loadingCoords.value = false
-            return
-          }
-          
-          // 使用百度地图的逆地理编码服务
-          const geocoder = new window.BMap.Geocoder()
-          const point = new window.BMap.Point(longitude, latitude)
-          
-          geocoder.getLocation(point, (result) => {
-            loadingCoords.value = false
-            if (result) {
-              form.address = result.address
-              form.city = result.addressComponents.city
-              ElMessage.success('获取当前位置成功')
-            } else {
-              ElMessage.error('获取地址信息失败')
-            }
-          })
-        } catch (error) {
-          loadingCoords.value = false
-          console.error('逆地理编码失败:', error)
-          ElMessage.error('获取地址信息失败')
-        }
-      },
-      (error) => {
-        loadingCoords.value = false
-        console.error('获取位置失败:', error)
-        ElMessage.error('获取位置失败，请检查定位权限')
-      }
-    )
-  } else {
-    ElMessage.error('您的浏览器不支持地理定位')
-  }
-}
-
-const getCoords = () => {
-  if (!form.address) {
-    ElMessage.warning('请先输入地址')
-    return
-  }
-  
-  loadingCoords.value = true
-  try {
-    if (!window.BMap) {
-      ElMessage.error('百度地图API加载失败')
-      loadingCoords.value = false
-      return
-    }
-    
-    // 使用百度地图的地址解析服务
-    const geocoder = new window.BMap.Geocoder()
-    geocoder.getPoint(form.address, (point) => {
-      loadingCoords.value = false
-      if (point) {
-        form.longitude = point.lng
-        form.latitude = point.lat
-        ElMessage.success('获取坐标成功')
-      } else {
-        ElMessage.error('获取坐标失败，请检查地址是否正确')
-      }
-    }, form.city)
-  } catch (error) {
-    loadingCoords.value = false
-    console.error('获取坐标失败:', error)
-    ElMessage.error('获取坐标失败，请检查地址是否正确')
-  }
-}
-
-// 防抖函数
-const debounce = (func, delay) => {
-  let timeoutId
-  return (...args) => {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => func.apply(null, args), delay)
-  }
-}
-
-// 监听地址变化自动获取坐标
-watch(() => form.address, debounce((newAddress) => {
-  if (newAddress && newAddress.length > 5) {
-    getCoords()
-  }
-}, 800))
 
 // 表单验证规则
 const rules = {
@@ -693,13 +600,6 @@ const nextStep = async () => {
       console.log('开始验证基础信息')
       await validateFields(['name', 'address'])
       console.log('基础信息验证通过')
-      
-      if (!form.longitude || !form.latitude) {
-        console.log('经纬度为空，显示警告')
-        ElMessage.warning('请获取坐标')
-        return
-      }
-      console.log('经纬度已获取:', form.longitude, form.latitude)
     }
     
     if (activeStep.value === 1) {
@@ -709,7 +609,17 @@ const nextStep = async () => {
       console.log('房源信息验证通过')
     }
     
-    if (activeStep.value < 2) {
+    if (activeStep.value === 2) {
+      // 验证媒体信息
+      console.log('开始验证媒体信息')
+      if (uploadedImages.value.length === 0) {
+        ElMessage.warning('请上传至少一张图片')
+        return
+      }
+      console.log('媒体信息验证通过')
+    }
+    
+    if (activeStep.value < 3) {
       console.log('步骤增加前:', activeStep.value)
       activeStep.value++
       console.log('步骤增加后:', activeStep.value)
@@ -744,12 +654,6 @@ const handleSubmit = async () => {
     // 验证所有字段
     await formRef.value.validate()
     
-    // 检查经纬度
-    if (!form.longitude || !form.latitude) {
-      ElMessage.warning('请获取坐标')
-      return
-    }
-    
     // 检查图片
     if (uploadedImages.value.length === 0) {
       ElMessage.warning('请上传至少一张图片')
@@ -765,6 +669,9 @@ const handleSubmit = async () => {
     console.log('准备提交的民宿数据:', {
       name: form.name,
       address: form.address,
+      city: form.city,
+      longitude: form.longitude,
+      latitude: form.latitude,
       imageUrl: form.imageUrl,
       coverImage: form.coverImage,
       imagesCount: uploadedImages.value.length
@@ -777,22 +684,9 @@ const handleSubmit = async () => {
     const result = await homestayAPI.create(submitData)
     console.log('民宿创建结果:', result)
     
-    await ElMessageBox.alert(
-      '发布成功！',
-      '提示',
-      {
-        confirmButtonText: '查看房源',
-        cancelButtonText: '继续发布',
-        showCancelButton: true,
-        callback: (action) => {
-          if (action === 'confirm') {
-            router.push('/landlord/homestays')
-          } else {
-            handleReset()
-          }
-        }
-      }
-    )
+    // 跳转到体验项目步骤
+    activeStep.value = 3
+    ElMessage.success('民宿发布成功！现在可以创建体验项目')
   } catch (error) {
     if (error !== 'cancel') {
       console.error('发布失败:', error)
@@ -812,6 +706,194 @@ const handleReset = () => {
   form.images = []
   form.coverImage = ''
   activeStep.value = 0
+}
+
+// 地址搜索相关方法
+const handleAddressInput = (value) => {
+  // 清空旧结果
+  addressSuggestions.value = []
+  
+  // 基础校验
+  if (!value || value.length < 2) {
+    return
+  }
+  
+  // 检查缓存
+  if (searchCache.has(value)) {
+    addressSuggestions.value = searchCache.get(value)
+    return
+  }
+  
+  // 防抖处理
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    // 确保高德地图 API 加载完成
+    if (typeof AMap === 'undefined') {
+      ElMessage.error('地图API加载失败')
+      return
+    }
+    
+    // 加载 AutoComplete 插件
+    AMap.plugin('AMap.AutoComplete', function() {
+      if (!autoComplete) {
+        autoComplete = new AMap.AutoComplete({
+          city: '全国'
+        })
+      }
+      
+      // 发起搜索
+      autoComplete.search(value, function(status, result) {
+        if (status === 'complete' && result.info === 'OK') {
+          const tips = result.tips.map(tip => ({
+            name: tip.name,
+            address: tip.address,
+            location: tip.location
+          }))
+          // 缓存结果
+          searchCache.set(value, tips)
+          // 限制缓存大小
+          if (searchCache.size > 100) {
+            const firstKey = searchCache.keys().next().value
+            searchCache.delete(firstKey)
+          }
+          addressSuggestions.value = tips
+        }
+      })
+    })
+  }, 500) // 500ms防抖
+}
+
+const handleAddressBlur = () => {
+  // 延迟隐藏建议列表，以便用户可以点击选择
+  setTimeout(() => {
+    addressSuggestions.value = []
+  }, 200)
+}
+
+const selectAddress = (suggestion) => {
+  form.address = suggestion.name + (suggestion.address ? ' ' + suggestion.address : '')
+  form.longitude = suggestion.location.lng
+  form.latitude = suggestion.location.lat
+  addressSuggestions.value = []
+  initMap(suggestion.location.lng, suggestion.location.lat)
+  showMap.value = true
+}
+
+// 获取当前位置
+const getCurrentLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { longitude, latitude } = position.coords
+        form.longitude = longitude
+        form.latitude = latitude
+        
+        // 确保高德地图 API 加载完成
+        if (typeof AMap === 'undefined') {
+          ElMessage.error('地图API加载失败')
+          return
+        }
+        
+        // 动态加载 Geocoder 插件
+        AMap.plugin('AMap.Geocoder', function() {
+          geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+          })
+          
+          geocoder.getAddress([longitude, latitude], function(status, result) {
+            console.log('Geocoder result:', status, result)
+            if (status === 'complete' && result.info === 'OK') {
+              const address = result.regeocode.formattedAddress
+              form.address = address
+              form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+              console.log('获取位置成功:', address, longitude, latitude)
+              initMap(longitude, latitude)
+              showMap.value = true
+              ElMessage.success('位置获取成功')
+            } else {
+              console.error('Geocoder failed:', status, result)
+              // 处理不同的错误情况
+              if (status === 'error' && result.info === 'INVALID_USER_SCODE') {
+                ElMessage.error('API key 配置错误，请检查高德地图 API key')
+              } else {
+                ElMessage.error('获取地址失败，请手动输入')
+              }
+              // 即使获取地址失败，也设置经纬度
+              initMap(longitude, latitude)
+              showMap.value = true
+              // 手动设置一个默认地址，避免表单验证失败
+              if (!form.address) {
+                form.address = `经度: ${longitude.toFixed(6)}, 纬度: ${latitude.toFixed(6)}`
+              }
+            }
+          })
+        })
+      },
+      (error) => {
+        console.error('获取位置失败:', error)
+        ElMessage.error('获取位置失败，请检查定位权限')
+      }
+    )
+  } else {
+    ElMessage.error('浏览器不支持地理定位')
+  }
+}
+
+// 初始化地图
+const initMap = (lng, lat) => {
+  // 确保高德地图 API 加载完成
+  if (typeof AMap === 'undefined') {
+    ElMessage.error('地图API加载失败')
+    return
+  }
+  
+  if (!map) {
+    // 动态加载 Map 组件
+    AMap.plugin(['AMap.Map', 'AMap.Marker'], function() {
+      map = new AMap.Map('locationMap', {
+        zoom: 15,
+        center: [lng, lat]
+      })
+      
+      // 添加标记
+      marker = new AMap.Marker({
+        position: [lng, lat],
+        draggable: true,
+        cursor: 'move'
+      })
+      
+      map.add(marker)
+      
+      // 监听标记拖动结束事件
+      marker.on('dragend', function(e) {
+        const position = e.lnglat
+        form.longitude = position.getLng()
+        form.latitude = position.getLat()
+        
+        // 逆地理编码获取新地址
+        AMap.plugin('AMap.Geocoder', function() {
+          geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+          })
+          
+          geocoder.getAddress([position.getLng(), position.getLat()], function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+              const address = result.regeocode.formattedAddress
+              form.address = address
+              form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+            }
+          })
+        })
+      })
+    })
+  } else {
+    // 更新地图中心和标记位置
+    map.setCenter([lng, lat])
+    map.setZoom(15)
+    marker.setPosition([lng, lat])
+  }
 }
 
 // 导航方法
@@ -835,9 +917,22 @@ const goToUser = () => {
   router.push('/user')
 }
 
+const goToCreateExperience = () => {
+  router.push('/landlord/experiences/create')
+}
+
+const goToMyExperiences = () => {
+  router.push('/landlord/experiences')
+}
+
 const handleLogout = async () => {
   await userStore.logout()
   router.push('/')
+}
+
+// 完成创建
+const finishCreation = () => {
+  router.push('/landlord/homestays')
 }
 </script>
 
@@ -987,47 +1082,6 @@ const handleLogout = async () => {
   margin-left: 10px;
 }
 
-.address-input-container {
-  position: relative;
-  width: 100%;
-}
-
-.address-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.suggestion-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-  background-color: #f5f7fa;
-}
-
-.suggestion-icon {
-  margin-right: 8px;
-  color: #667eea;
-}
-
-.suggestion-text {
-  flex: 1;
-  font-size: 14px;
-}
-
 /* 优化整体UI */
 .form-card {
   margin-bottom: 30px;
@@ -1069,6 +1123,53 @@ const handleLogout = async () => {
 
 .el-step__head:hover {
   transform: scale(1.1);
+}
+
+.address-input-container {
+  position: relative;
+}
+
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.suggestion-item:hover {
+  background-color: #f5f7fa;
+}
+
+.map-container {
+  margin-top: 20px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  display: block;
+}
+
+.map-tip {
+  padding: 10px;
+  background-color: #f5f7fa;
+  font-size: 12px;
+  color: #606266;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

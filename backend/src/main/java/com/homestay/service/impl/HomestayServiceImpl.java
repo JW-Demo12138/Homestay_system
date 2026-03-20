@@ -289,7 +289,7 @@ public class HomestayServiceImpl implements HomestayService {
             int count = 0;
             for (Homestay homestay : homestays) {
                 if (homestay.getStatus() == null) {
-                    homestay.setStatus(1);
+                    homestay.setStatus(2); // 默认为待审核状态
                 }
                 if (homestay.getOwnerId() == null) {
                     homestay.setOwnerId(currentUserId);
@@ -309,6 +309,147 @@ public class HomestayServiceImpl implements HomestayService {
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("导入民宿失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 审核民宿
+     * <p>
+     * 管理员审核民宿，设置审核状态
+     * 
+     * @param id 民宿ID
+     * @param status 审核状态：1-通过，3-驳回
+     * @param remark 审核备注
+     * @return Result 审核结果的响应对象
+     */
+    @Override
+    public Result reviewHomestay(Long id, Integer status, String remark) {
+        try {
+            Homestay homestay = homestayMapper.selectById(id);
+            if (homestay == null) {
+                return Result.error("民宿不存在");
+            }
+            
+            // 验证状态是否合法
+            if (status != 1 && status != 3) {
+                return Result.error("审核状态无效");
+            }
+            
+            // 更新审核状态
+            homestay.setStatus(status);
+            homestay.setRejectReason(status == 3 ? remark : null);
+            
+            if (homestayMapper.updateById(homestay) > 0) {
+                return Result.success("审核操作成功");
+            }
+            return Result.error("审核操作失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("审核操作失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 下架/上架民宿
+     * <p>
+     * 房东手动下架或上架民宿
+     * 
+     * @param id 民宿ID
+     * @param status 状态：0-下架，1-上架
+     * @return Result 操作结果的响应对象
+     */
+    @Override
+    public Result updateHomestayStatus(Long id, Integer status) {
+        Long currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            return Result.error("用户未登录或登录已过期");
+        }
+        
+        try {
+            Homestay homestay = homestayMapper.selectById(id);
+            if (homestay == null) {
+                return Result.error("民宿不存在");
+            }
+            
+            // 验证是否是民宿的房东
+            if (!homestay.getOwnerId().equals(currentUserId)) {
+                return Result.error("无权操作此民宿");
+            }
+            
+            // 验证状态是否合法
+            if (status != 0 && status != 1) {
+                return Result.error("状态值无效");
+            }
+            
+            // 更新状态
+            homestay.setStatus(status);
+            
+            if (homestayMapper.updateById(homestay) > 0) {
+                return Result.success("操作成功");
+            }
+            return Result.error("操作失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("操作失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 按名称和状态查询民宿
+     * <p>
+     * 房东按名称和状态查询自己的民宿
+     * 
+     * @param params 查询参数，包含名称关键词和状态
+     * @return Result 包含民宿列表的响应对象
+     */
+    @Override
+    public Result queryHomestayByNameAndStatus(Map<String, Object> params) {
+        Long currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            return Result.error("用户未登录或登录已过期");
+        }
+        
+        try {
+            QueryWrapper<Homestay> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("owner_id", currentUserId);
+            
+            // 添加名称关键词搜索
+            if (params.get("name") != null) {
+                queryWrapper.like("name", params.get("name"));
+            }
+            
+            // 添加状态筛选
+            if (params.get("status") != null) {
+                queryWrapper.eq("status", params.get("status"));
+            }
+            
+            List<Homestay> homestays = homestayMapper.selectList(queryWrapper);
+            return Result.success("查询民宿成功", homestays);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("查询民宿失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取待审核的民宿列表
+     * <p>
+     * 管理员获取待审核的民宿列表
+     * 
+     * @return Result 包含待审核民宿列表的响应对象
+     */
+    @Override
+    public Result getPendingHomestays() {
+        try {
+            QueryWrapper<Homestay> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("status", 2); // 2-待审核
+            queryWrapper.orderByDesc("create_time");
+            
+            List<Homestay> homestays = homestayMapper.selectList(queryWrapper);
+            return Result.success("获取待审核民宿成功", homestays);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取待审核民宿失败：" + e.getMessage());
         }
     }
 }

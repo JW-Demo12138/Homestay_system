@@ -1,0 +1,36 @@
+表名,字段名,数据类型,约束,描述
+t_user,id,BIGINT,PRIMARY KEY,用户ID
+t_user,username,VARCHAR(255),NOT NULL,用户名
+t_user,password,VARCHAR(255),NOT NULL,密码
+t_user,phone,VARCHAR(20),NOT NULL,手机号
+t_user,role_type,VARCHAR(20),NOT NULL,角色类型(user/landlord)
+t_user,status,VARCHAR(20),NOT NULL,状态
+t_user,created_at,DATETIME,NOT NULL,创建时间
+t_user,updated_at,DATETIME,NOT NULL,更新时间
+t_homestay,id,BIGINT,PRIMARY KEY,民宿ID
+t_homestay,landlord_id,BIGINT,NOT NULL, FOREIGN KEY,房东ID
+t_homestay,name,VARCHAR(255),NOT NULL,民宿名称
+t_homestay,address,VARCHAR(255),NOT NULL,地址
+t_homestay,longitude,DOUBLE,NOT NULL,经度
+t_homestay,latitude,DOUBLE,NOT NULL,纬度
+t_homestay,status,VARCHAR(20),NOT NULL,状态
+t_homestay,created_at,DATETIME,NOT NULL,创建时间
+t_homestay,updated_at,DATETIME,NOT NULL,更新时间
+t_experience,id,BIGINT,PRIMARY KEY,体验ID
+t_experience,landlord_id,BIGINT,NOT NULL, FOREIGN KEY,房东ID
+t_experience,name,VARCHAR(255),NOT NULL,体验名称
+t_experience,price,DECIMAL(10,2),NOT NULL,价格
+t_experience,duration,INT,NOT NULL,时长(分钟)
+t_experience,longitude,DOUBLE,NOT NULL,经度
+t_experience,latitude,DOUBLE,NOT NULL,纬度
+t_experience,status,VARCHAR(20),NOT NULL,状态
+t_experience,created_at,DATETIME,NOT NULL,创建时间
+t_experience,updated_at,DATETIME,NOT NULL,更新时间
+t_order,id,BIGINT,PRIMARY KEY,订单ID
+t_order,user_id,BIGINT,NOT NULL, FOREIGN KEY,用户ID
+t_order,type,VARCHAR(20),NOT NULL,类型(homestay/experience)
+t_order,target_id,BIGINT,NOT NULL,目标ID
+t_order,total_price,DECIMAL(10,2),NOT NULL,总价
+t_order,status,VARCHAR(20),NOT NULL,状态
+t_order,created_at,DATETIME,NOT NULL,创建时间
+t_order,updated_at,DATETIME,NOT NULL,更新时间

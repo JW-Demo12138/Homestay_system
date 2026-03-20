@@ -13,6 +13,7 @@
           <el-select v-model="loginForm.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="游客" value="TOURIST" />
             <el-option label="房东" value="LANDLORD" />
+            <el-option label="管理员" value="ADMIN" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -51,8 +52,7 @@ const rules = {
     { required: true, message: '请输入用户名或手机号', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+    { required: true, message: '请输入密码', trigger: 'blur' }
   ],
   role: [
     { required: true, message: '请选择角色', trigger: 'change' }
@@ -71,7 +71,7 @@ const handleLogin = async () => {
     if (userStore.role === 'LANDLORD') {
       router.push('/landlord')
     } else if (userStore.role === 'ADMIN') {
-      router.push('/')
+      router.push('/admin')
     } else {
       router.push('/')
     }

@@ -139,4 +139,36 @@ public class OrderController {
         // 调用订单服务评价订单
         return orderService.commentOrder(id, rating, content);
     }
+    
+    /**
+     * 锁定库存接口
+     * @param order 订单信息
+     * @return 锁定结果
+     */
+    @PostMapping("/lock")
+    public Result lockInventory(@RequestBody Order order) {
+        return orderService.lockInventory(order);
+    }
+    
+    /**
+     * 释放库存接口
+     * @param orderId 订单ID
+     * @return 释放结果
+     */
+    @PostMapping("/release/{orderId}")
+    public Result releaseInventory(@PathVariable Long orderId) {
+        return orderService.releaseInventory(orderId);
+    }
+    
+    /**
+     * 检查库存接口
+     * @param type 类型：HOMESTAY或EXPERIENCE
+     * @param itemId 项目ID：民宿ID或体验项目ID
+     * @param date 日期
+     * @return 检查结果
+     */
+    @GetMapping("/check-inventory")
+    public Result checkInventory(@RequestParam String type, @RequestParam Long itemId, @RequestParam String date) {
+        return orderService.checkInventory(type, itemId, date);
+    }
 }

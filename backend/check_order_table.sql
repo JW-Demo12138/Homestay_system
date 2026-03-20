@@ -1,0 +1,2 @@
+USE homestay;
+DESCRIBE `order`;

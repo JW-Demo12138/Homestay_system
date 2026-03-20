@@ -97,4 +97,46 @@ public interface HomestayService {
      * @return Result 导入结果的响应对象
      */
     Result importHomestays(java.util.List<Homestay> homestays);
+    
+    /**
+     * 审核民宿
+     * <p>
+     * 管理员审核民宿，设置审核状态
+     * 
+     * @param id 民宿ID
+     * @param status 审核状态：1-通过，3-驳回
+     * @param remark 审核备注
+     * @return Result 审核结果的响应对象
+     */
+    Result reviewHomestay(Long id, Integer status, String remark);
+    
+    /**
+     * 下架/上架民宿
+     * <p>
+     * 房东手动下架或上架民宿
+     * 
+     * @param id 民宿ID
+     * @param status 状态：0-下架，1-上架
+     * @return Result 操作结果的响应对象
+     */
+    Result updateHomestayStatus(Long id, Integer status);
+    
+    /**
+     * 按名称和状态查询民宿
+     * <p>
+     * 房东按名称和状态查询自己的民宿
+     * 
+     * @param params 查询参数，包含名称关键词和状态
+     * @return Result 包含民宿列表的响应对象
+     */
+    Result queryHomestayByNameAndStatus(Map<String, Object> params);
+    
+    /**
+     * 获取待审核的民宿列表
+     * <p>
+     * 管理员获取待审核的民宿列表
+     * 
+     * @return Result 包含待审核民宿列表的响应对象
+     */
+    Result getPendingHomestays();
 }

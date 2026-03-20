@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真实数据库表结构</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .table-section {
+            margin: 30px 0;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .table-section h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>真实数据库表结构</h1>
+    
+    <div class="table-section">
+        <h3>1. 用户表 (user)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>用户ID</td>
+            </tr>
+            <tr>
+                <td>username</td>
+                <td>VARCHAR(50)</td>
+                <td>NOT NULL, UNIQUE</td>
+                <td>用户名</td>
+            </tr>
+            <tr>
+                <td>password</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>密码（加密）</td>
+            </tr>
+            <tr>
+                <td>phone</td>
+                <td>VARCHAR(20)</td>
+                <td>NOT NULL, UNIQUE</td>
+                <td>手机号</td>
+            </tr>
+            <tr>
+                <td>role</td>
+                <td>VARCHAR(20)</td>
+                <td>NOT NULL, DEFAULT 'TOURIST'</td>
+                <td>角色：LANDLORD-房东，TOURIST-游客，ADMIN-管理员</td>
+            </tr>
+            <tr>
+                <td>avatar</td>
+                <td>VARCHAR(500)</td>
+                <td>DEFAULT NULL</td>
+                <td>头像URL</td>
+            </tr>
+            <tr>
+                <td>status</td>
+                <td>TINYINT</td>
+                <td>NOT NULL, DEFAULT '1'</td>
+                <td>状态：0-禁用，1-启用</td>
+            </tr>
+            <tr>
+                <td>create_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td>创建时间</td>
+            </tr>
+            <tr>
+                <td>update_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</td>
+                <td>更新时间</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="table-section">
+        <h3>2. 民宿表 (homestay)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>民宿ID</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>VARCHAR(100)</td>
+                <td>NOT NULL</td>
+                <td>民宿名称</td>
+            </tr>
+            <tr>
+                <td>address</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>地址</td>
+            </tr>
+            <tr>
+                <td>latitude</td>
+                <td>DOUBLE</td>
+                <td>DEFAULT NULL</td>
+                <td>纬度</td>
+            </tr>
+            <tr>
+                <td>longitude</td>
+                <td>DOUBLE</td>
+                <td>DEFAULT NULL</td>
+                <td>经度</td>
+            </tr>
+            <tr>
+                <td>price</td>
+                <td>DECIMAL(10,2)</td>
+                <td>NOT NULL</td>
+                <td>价格（每晚）</td>
+            </tr>
+            <tr>
+                <td>room_type</td>
+                <td>VARCHAR(50)</td>
+                <td>DEFAULT NULL</td>
+                <td>房型</td>
+            </tr>
+            <tr>
+                <td>facility</td>
+                <td>VARCHAR(500)</td>
+                <td>DEFAULT NULL</td>
+                <td>设施</td>
+            </tr>
+            <tr>
+                <td>image_url</td>
+                <td>VARCHAR(500)</td>
+                <td>DEFAULT NULL</td>
+                <td>封面图片地址</td>
+            </tr>
+            <tr>
+                <td>description</td>
+                <td>TEXT</td>
+                <td>DEFAULT NULL</td>
+                <td>描述</td>
+            </tr>
+            <tr>
+                <td>status</td>
+                <td>TINYINT</td>
+                <td>NOT NULL, DEFAULT '1'</td>
+                <td>状态：0-下架，1-上架，2-待审核</td>
+            </tr>
+            <tr>
+                <td>owner_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>房东ID</td>
+            </tr>
+            <tr>
+                <td>create_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td>创建时间</td>
+            </tr>
+            <tr>
+                <td>update_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</td>
+                <td>更新时间</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="table-section">
+        <h3>3. 订单表 (order)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>订单ID</td>
+            </tr>
+            <tr>
+                <td>user_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>用户ID</td>
+            </tr>
+            <tr>
+                <td>homestay_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>民宿ID</td>
+            </tr>
+            <tr>
+                <td>check_in_date</td>
+                <td>DATE</td>
+                <td>NOT NULL</td>
+                <td>入住日期</td>
+            </tr>
+            <tr>
+                <td>check_out_date</td>
+                <td>DATE</td>
+                <td>NOT NULL</td>
+                <td>退房日期</td>
+            </tr>
+            <tr>
+                <td>price</td>
+                <td>DECIMAL(10,2)</td>
+                <td>NOT NULL</td>
+                <td>订单价格</td>
+            </tr>
+            <tr>
+                <td>status</td>
+                <td>VARCHAR(20)</td>
+                <td>NOT NULL, DEFAULT 'PENDING'</td>
+                <td>订单状态：PENDING-待支付，PAID-已支付，CANCELLED-已取消，COMPLETED-已完成</td>
+            </tr>
+            <tr>
+                <td>pay_time</td>
+                <td>DATETIME</td>
+                <td>DEFAULT NULL</td>
+                <td>支付时间</td>
+            </tr>
+            <tr>
+                <td>create_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td>创建时间</td>
+            </tr>
+            <tr>
+                <td>update_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</td>
+                <td>更新时间</td>
+            </tr>
+            <tr>
+                <td>experience_id</td>
+                <td>BIGINT</td>
+                <td>DEFAULT NULL</td>
+                <td>体验项目ID</td>
+            </tr>
+            <tr>
+                <td>order_type</td>
+                <td>VARCHAR(20)</td>
+                <td>NOT NULL, DEFAULT 'HOMESTAY'</td>
+                <td>订单类型：HOMESTAY-民宿，EXPERIENCE-体验项目</td>
+            </tr>
+            <tr>
+                <td>experience_date</td>
+                <td>DATE</td>
+                <td>DEFAULT NULL</td>
+                <td>体验日期</td>
+            </tr>
+            <tr>
+                <td>quantity</td>
+                <td>INT</td>
+                <td>NOT NULL, DEFAULT 1</td>
+                <td>数量</td>
+            </tr>
+            <tr>
+                <td>lock_expire_time</td>
+                <td>DATETIME</td>
+                <td>DEFAULT NULL</td>
+                <td>库存锁定过期时间</td>
+            </tr>
+            <tr>
+                <td>experience_time</td>
+                <td>VARCHAR(50)</td>
+                <td>DEFAULT NULL</td>
+                <td>体验时间段</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="table-section">
+        <h3>4. 评分表 (homestay_rating)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>rating_id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>评分ID</td>
+            </tr>
+            <tr>
+                <td>homestay_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>民宿ID</td>
+            </tr>
+            <tr>
+                <td>user_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>用户ID</td>
+            </tr>
+            <tr>
+                <td>rating</td>
+                <td>TINYINT</td>
+                <td>NOT NULL</td>
+                <td>评分：1-5星</td>
+            </tr>
+            <tr>
+                <td>comment</td>
+                <td>TEXT</td>
+                <td>DEFAULT NULL</td>
+                <td>评论内容</td>
+            </tr>
+            <tr>
+                <td>create_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td>创建时间</td>
+            </tr>
+            <tr>
+                <td>update_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</td>
+                <td>更新时间</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="table-section">
+        <h3>5. 投诉表 (complaint)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>投诉ID</td>
+            </tr>
+            <tr>
+                <td>user_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>用户ID</td>
+            </tr>
+            <tr>
+                <td>homestay_id</td>
+                <td>BIGINT</td>
+                <td>NOT NULL</td>
+                <td>民宿ID</td>
+            </tr>
+            <tr>
+                <td>content</td>
+                <td>TEXT</td>
+                <td>NOT NULL</td>
+                <td>投诉内容</td>
+            </tr>
+            <tr>
+                <td>status</td>
+                <td>TINYINT</td>
+                <td>NOT NULL, DEFAULT '0'</td>
+                <td>状态：0-待处理，1-已处理</td>
+            </tr>
+            <tr>
+                <td>handle_time</td>
+                <td>DATETIME</td>
+                <td>DEFAULT NULL</td>
+                <td>处理时间</td>
+            </tr>
+            <tr>
+                <td>create_time</td>
+                <td>DATETIME</td>
+                <td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td>创建时间</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="table-section">
+        <h3>6. 民宿特色表 (homestay_feature)</h3>
+        <table>
+            <tr>
+                <th>字段名</th>
+                <th>数据类型</th>
+                <th>约束</th>
+                <th>描述</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>BIGINT</td>
+                <td>PRIMARY KEY, AUTO_INCREMENT</td>
+                <td>特色ID</td>
+            </tr>

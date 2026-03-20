@@ -207,6 +207,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { orderAPI } from '@/api/order'
+import { ratingAPI } from '@/api/rating'
 import { homestayAPI } from '@/api/homestay'
 import { formatPrice } from '@/utils'
 import { ORDER_STATUS_MAP } from '@/config'
@@ -340,9 +341,20 @@ const submitComment = async () => {
   
   commentLoading.value = true
   try {
-    await orderAPI.comment(currentOrder.value.id, {
+    // 直接从订单对象中获取民宿ID
+    const homestayId = currentOrder.value.homestayId
+    
+    if (!homestayId) {
+      console.error('订单中缺少民宿ID信息:', currentOrder.value)
+      ElMessage.error('订单中缺少民宿ID信息')
+      return
+    }
+    
+    await ratingAPI.create({
+      homestayId: homestayId,
+      userId: userStore.userId,
       rating: commentForm.rating,
-      content: commentForm.content
+      comment: commentForm.content
     })
     ElMessage.success('评价成功')
     commentDialogVisible.value = false

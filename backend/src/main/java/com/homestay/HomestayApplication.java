@@ -3,7 +3,6 @@ package com.homestay;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -14,7 +13,6 @@ import org.springframework.web.filter.CorsFilter;
  * 应用的入口点，配置了MyBatis Mapper扫描和跨域处理
  */
 @SpringBootApplication
-@EnableCaching // 启用缓存
 @MapperScan("com.homestay.mapper") // 扫描Mapper接口
 public class HomestayApplication {
 

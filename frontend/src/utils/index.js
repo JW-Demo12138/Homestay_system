@@ -23,11 +23,17 @@ export const formatPrice = (price) => {
   return Number(price).toFixed(2)
 }
 
-export const getImageUrl = (url) => {
+export const getImageUrl = (url, isLocal = false) => {
   if (!url) return ''
   if (url.startsWith('http')) return url
   // 处理可能的重复路径
   const cleanUrl = url.split(',').filter(Boolean)[0] || url
-  // 添加基本路径
-  return `http://localhost:8080${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`
+  // 根据是否使用本地路径返回不同的URL
+  if (isLocal) {
+    // 本地路径处理 - 特色体验图片实际保存在后端的uploads/avatars目录
+    return `/uploads/avatars/${cleanUrl.includes('/') ? cleanUrl.split('/').pop() : cleanUrl}`
+  } else {
+    // 后端服务器路径处理
+    return `http://localhost:8080${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`
+  }
 }

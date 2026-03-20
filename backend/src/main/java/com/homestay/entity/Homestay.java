@@ -122,6 +122,13 @@ public class Homestay {
     private Double avgRating;
 
     /**
+     * 驳回原因
+     * 审核驳回时的原因
+     */
+    @TableField("reject_reason")
+    private String rejectReason;
+
+    /**
      * 房东用户名
      * 非数据库字段，用于前端展示
      */
@@ -475,5 +482,23 @@ public class Homestay {
      */
     public void setAvgRating(Double avgRating) {
         this.avgRating = avgRating;
+    }
+
+    /**
+     * 获取驳回原因
+     * 
+     * @return String 驳回原因
+     */
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    /**
+     * 设置驳回原因
+     * 
+     * @param rejectReason 驳回原因
+     */
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homestay.mapper.ExperienceMapper">
+    
+    <!-- 根据房东ID查询体验项目 -->
+    <select id="selectByOwnerId" resultType="com.homestay.entity.Experience">
+        SELECT * FROM experience WHERE owner_id = #{ownerId} ORDER BY create_time DESC
+    </select>
+    
+    <!-- 查询审核中的体验项目 -->
+    <select id="selectPendingApproval" resultType="com.homestay.entity.Experience">
+        SELECT * FROM experience WHERE status = 2 ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据类型和状态查询体验项目 -->
+    <select id="selectByTypeAndStatus" resultType="com.homestay.entity.Experience">
+        SELECT * FROM experience WHERE type = #{type} AND status = #{status} ORDER BY create_time DESC
+    </select>
+</mapper>

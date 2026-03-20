@@ -52,12 +52,21 @@ public class SecurityConfig {
             .antMatchers("/api/tag/**").permitAll()
             .antMatchers("/api/tags/**").permitAll()
             
-            // 民宿相关接口
-            .antMatchers("/api/homestay/**").permitAll()
+            // 公开访问的民宿和体验接口
+            .antMatchers("/api/homestay/list").permitAll()
+            .antMatchers("/api/homestay/detail/**").permitAll()
+            .antMatchers("/api/homestay/search").permitAll()
+            .antMatchers("/api/homestay/recommend").permitAll()
+            .antMatchers("/api/experience/list").permitAll()
+            .antMatchers("/api/experience/detail/**").permitAll()
+            .antMatchers("/api/experience/by-type").permitAll()
             
             // 特色专题接口
             .antMatchers("/api/feature/topic").permitAll()
             .antMatchers("/api/feature/list").permitAll()
+            
+            // 评分接口
+            .antMatchers("/api/rating/**").permitAll()
             
             .antMatchers("/uploads/**").permitAll()
             .antMatchers("/static/**").permitAll()

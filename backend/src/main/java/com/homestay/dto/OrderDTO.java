@@ -8,6 +8,7 @@ import java.util.Date;
  */
 public class OrderDTO {
     private Long id;
+    private Long homestayId;
     private String homestayImage;
     private String homestayName;
     private String homestayAddress;
@@ -17,6 +18,9 @@ public class OrderDTO {
     private Double price;
     private String status;
     private Date createTime;
+    private String guestName;
+    private String guestPhone;
+    private String guestEmail;
 
     // getset方法
     public Long getId() {
@@ -25,6 +29,14 @@ public class OrderDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getHomestayId() {
+        return homestayId;
+    }
+
+    public void setHomestayId(Long homestayId) {
+        this.homestayId = homestayId;
     }
 
     public String getHomestayImage() {
@@ -97,5 +109,29 @@ public class OrderDTO {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public void setGuestName(String guestName) {
+        this.guestName = guestName;
+    }
+
+    public String getGuestPhone() {
+        return guestPhone;
+    }
+
+    public void setGuestPhone(String guestPhone) {
+        this.guestPhone = guestPhone;
+    }
+
+    public String getGuestEmail() {
+        return guestEmail;
+    }
+
+    public void setGuestEmail(String guestEmail) {
+        this.guestEmail = guestEmail;
     }
 }

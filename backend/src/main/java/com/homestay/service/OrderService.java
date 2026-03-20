@@ -106,4 +106,36 @@ public interface OrderService {
      * @return Result 评价结果的响应对象
      */
     Result commentOrder(Long id, Integer rating, String content);
-}
+    
+    /**
+     * 锁定库存
+     * <p>
+     * 锁定预订的库存，设置锁定过期时间
+     * 
+     * @param order 订单信息对象
+     * @return Result 锁定结果的响应对象
+     */
+    Result lockInventory(Order order);
+    
+    /**
+     * 释放库存
+     * <p>
+     * 释放锁定的库存，当订单取消或过期时调用
+     * 
+     * @param orderId 订单ID
+     * @return Result 释放结果的响应对象
+     */
+    Result releaseInventory(Long orderId);
+    
+    /**
+     * 检查库存
+     * <p>
+     * 检查指定日期的库存是否可用
+     * 
+     * @param type 类型：HOMESTAY或EXPERIENCE
+     * @param itemId 项目ID：民宿ID或体验项目ID
+     * @param date 日期
+     * @return Result 检查结果的响应对象
+     */
+    Result checkInventory(String type, Long itemId, String date);
+}  

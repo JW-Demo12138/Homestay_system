@@ -99,7 +99,11 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="createTime" label="创建时间" width="180" />
+            <el-table-column label="创建时间" width="180">
+              <template #default="scope">
+                {{ formatDate(scope.row.createTime) }}
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="150">
               <template #default="scope">
                 <el-button size="small" @click="viewOrder(scope.row)">查看</el-button>
@@ -150,7 +154,7 @@
           <h3>订单信息</h3>
           <el-descriptions :column="1" border>
             <el-descriptions-item label="订单编号">{{ currentOrder.id }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ currentOrder.createTime }}</el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{ formatDate(currentOrder.createTime) }}</el-descriptions-item>
             <el-descriptions-item label="订单状态">
               <el-tag :type="getStatusType(currentOrder.status)">
                 {{ getStatusText(currentOrder.status) }}
@@ -294,9 +298,25 @@ const handleCurrentChange = (current) => {
 }
 
 // 查看订单详情
-const viewOrder = (order) => {
-  currentOrder.value = order
-  orderDialogVisible.value = true
+const viewOrder = async (order) => {
+  try {
+    // 调用订单详情接口获取完整信息
+    const detailResponse = await orderAPI.getDetail(order.id)
+    const orderDetail = detailResponse.data || detailResponse
+    
+    // 确保民宿信息存在，如果不存在则使用列表中的信息
+    if (!orderDetail.homestayName || orderDetail.homestayName === '未知民宿') {
+      orderDetail.homestayName = order.homestayName
+      orderDetail.homestayAddress = order.homestayAddress
+      orderDetail.homestayImage = order.homestayImage
+    }
+    
+    currentOrder.value = orderDetail
+    orderDialogVisible.value = true
+  } catch (error) {
+    console.error('获取订单详情失败:', error)
+    ElMessage.error('获取订单详情失败')
+  }
 }
 
 // 更新订单状态
@@ -357,6 +377,20 @@ const goToUser = () => {
 const handleLogout = async () => {
   await userStore.logout()
   router.push('/')
+}
+
+// 格式化时间
+const formatDate = (dateString) => {
+  if (!dateString) return '未知时间'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '未知时间'
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 // 组件挂载时加载数据

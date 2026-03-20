@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 认证服务实现类
@@ -18,6 +20,8 @@ import java.util.Map;
  */
 @Service
 public class AuthServiceImpl implements AuthService {
+    
+
 
     /**
      * 用户Mapper，用于数据库操作
@@ -215,4 +219,8 @@ public class AuthServiceImpl implements AuthService {
     public Result logout() {
         return Result.success("登出成功");
     }
+    
+
+    
+
 }

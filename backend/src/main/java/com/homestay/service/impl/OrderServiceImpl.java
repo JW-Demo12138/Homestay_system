@@ -275,6 +275,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderDTO convertToDTO(Order order) {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(order.getId());
+        orderDTO.setHomestayId(order.getHomestayId());
         
         if (order.getHomestay() != null) {
             orderDTO.setHomestayImage(order.getHomestay().getImageUrl());
@@ -303,7 +304,109 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setPrice(order.getPrice() != null ? order.getPrice() : 0.0);
         orderDTO.setStatus(order.getStatus());
         orderDTO.setCreateTime(order.getCreateTime());
+        orderDTO.setGuestName(order.getGuestName() != null ? order.getGuestName() : "未知");
+        orderDTO.setGuestPhone(order.getGuestPhone() != null ? order.getGuestPhone() : "未知");
+        orderDTO.setGuestEmail(order.getGuestEmail() != null ? order.getGuestEmail() : "未知");
         
         return orderDTO;
+    }
+    
+    /**
+     * 锁定库存
+     * <p>
+     * 锁定预订的库存，设置锁定过期时间
+     * 
+     * @param order 订单信息对象
+     * @return Result 锁定结果的响应对象
+     */
+    @Override
+    public Result lockInventory(Order order) {
+        try {
+            // 计算30分钟后的过期时间
+            java.util.Date now = new java.util.Date();
+            java.util.Date expireTime = new java.util.Date(now.getTime() + 30 * 60 * 1000);
+            order.setLockExpireTime(expireTime);
+            
+            // 创建订单，状态为待支付
+            order.setStatus("PENDING");
+            
+            if (orderMapper.insert(order) > 0) {
+                return Result.success("库存锁定成功，订单创建成功", order);
+            }
+            return Result.error("库存锁定失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("库存锁定失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 释放库存
+     * <p>
+     * 释放锁定的库存，当订单取消或过期时调用
+     * 
+     * @param orderId 订单ID
+     * @return Result 释放结果的响应对象
+     */
+    @Override
+    public Result releaseInventory(Long orderId) {
+        try {
+            Order order = orderMapper.selectById(orderId);
+            if (order == null) {
+                return Result.error("订单不存在");
+            }
+            
+            // 更新订单状态为已取消
+            order.setStatus("CANCELLED");
+            
+            if (orderMapper.updateById(order) > 0) {
+                return Result.success("库存释放成功");
+            }
+            return Result.error("库存释放失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("库存释放失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 检查库存
+     * <p>
+     * 检查指定日期的库存是否可用
+     * 
+     * @param type 类型：HOMESTAY或EXPERIENCE
+     * @param itemId 项目ID：民宿ID或体验项目ID
+     * @param date 日期
+     * @return Result 检查结果的响应对象
+     */
+    @Override
+    public Result checkInventory(String type, Long itemId, String date) {
+        try {
+            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+            
+            if ("HOMESTAY".equals(type)) {
+                queryWrapper.eq("homestay_id", itemId);
+                queryWrapper.between("check_in_date", date, date);
+            } else if ("EXPERIENCE".equals(type)) {
+                queryWrapper.eq("experience_id", itemId);
+                queryWrapper.eq("experience_date", date);
+            } else {
+                return Result.error("类型无效");
+            }
+            
+            // 只查询状态为待支付和已支付的订单
+            queryWrapper.in("status", "PENDING", "PAID");
+            
+            Long count = orderMapper.selectCount(queryWrapper);
+            
+            if (count > 0) {
+                return Result.error("该日期已被预订");
+            }
+            
+            return Result.success("库存可用");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("库存检查失败：" + e.getMessage());
+        }
     }
 }

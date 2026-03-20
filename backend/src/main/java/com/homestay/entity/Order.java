@@ -42,6 +42,13 @@ public class Order {
     private com.homestay.entity.Homestay homestay;
     
     /**
+     * 体验项目信息
+     * 非数据库字段，用于关联查询
+     */
+    @TableField(exist = false)
+    private Experience experience;
+    
+    /**
      * 入住日期
      */
     @TableField("check_in_date")
@@ -52,6 +59,42 @@ public class Order {
      */
     @TableField("check_out_date")
     private Date checkOutDate;
+    
+    /**
+     * 体验项目ID
+     */
+    @TableField("experience_id")
+    private Long experienceId;
+    
+    /**
+     * 订单类型：HOMESTAY-民宿，EXPERIENCE-体验项目
+     */
+    @TableField("order_type")
+    private String orderType;
+    
+    /**
+     * 体验日期
+     */
+    @TableField("experience_date")
+    private Date experienceDate;
+    
+    /**
+     * 数量
+     */
+    @TableField("quantity")
+    private Integer quantity;
+    
+    /**
+     * 库存锁定过期时间
+     */
+    @TableField("lock_expire_time")
+    private Date lockExpireTime;
+    
+    /**
+     * 体验时间段
+     */
+    @TableField("experience_time")
+    private String experienceTime;
     
     /**
      * 价格
@@ -69,6 +112,24 @@ public class Order {
      */
     @TableField("pay_time")
     private Date payTime;
+    
+    /**
+     * 顾客姓名
+     */
+    @TableField("guest_name")
+    private String guestName;
+    
+    /**
+     * 顾客电话
+     */
+    @TableField("guest_phone")
+    private String guestPhone;
+    
+    /**
+     * 顾客邮箱
+     */
+    @TableField("guest_email")
+    private String guestEmail;
     
     /**
      * 创建时间
@@ -245,6 +306,60 @@ public class Order {
     }
     
     /**
+     * 获取顾客姓名
+     * 
+     * @return String 顾客姓名
+     */
+    public String getGuestName() {
+        return guestName;
+    }
+    
+    /**
+     * 设置顾客姓名
+     * 
+     * @param guestName 顾客姓名
+     */
+    public void setGuestName(String guestName) {
+        this.guestName = guestName;
+    }
+    
+    /**
+     * 获取顾客电话
+     * 
+     * @return String 顾客电话
+     */
+    public String getGuestPhone() {
+        return guestPhone;
+    }
+    
+    /**
+     * 设置顾客电话
+     * 
+     * @param guestPhone 顾客电话
+     */
+    public void setGuestPhone(String guestPhone) {
+        this.guestPhone = guestPhone;
+    }
+    
+    /**
+     * 获取顾客邮箱
+     * 
+     * @return String 顾客邮箱
+     */
+    public String getGuestEmail() {
+        return guestEmail;
+    }
+    
+    /**
+     * 设置顾客邮箱
+     * 
+     * @param guestEmail 顾客邮箱
+     */
+    public void setGuestEmail(String guestEmail) {
+        this.guestEmail = guestEmail;
+    }
+    
+    /**
      * 获取创建时间
      * 
      * @return Date 创建时间
@@ -278,5 +393,131 @@ public class Order {
      */
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+    
+    /**
+     * 获取体验项目信息
+     * 
+     * @return Experience 体验项目信息
+     */
+    public Experience getExperience() {
+        return experience;
+    }
+    
+    /**
+     * 设置体验项目信息
+     * 
+     * @param experience 体验项目信息
+     */
+    public void setExperience(Experience experience) {
+        this.experience = experience;
+    }
+    
+    /**
+     * 获取体验项目ID
+     * 
+     * @return Long 体验项目ID
+     */
+    public Long getExperienceId() {
+        return experienceId;
+    }
+    
+    /**
+     * 设置体验项目ID
+     * 
+     * @param experienceId 体验项目ID
+     */
+    public void setExperienceId(Long experienceId) {
+        this.experienceId = experienceId;
+    }
+    
+    /**
+     * 获取订单类型
+     * 
+     * @return String 订单类型
+     */
+    public String getOrderType() {
+        return orderType;
+    }
+    
+    /**
+     * 设置订单类型
+     * 
+     * @param orderType 订单类型
+     */
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
+    }
+    
+    /**
+     * 获取体验日期
+     * 
+     * @return Date 体验日期
+     */
+    public Date getExperienceDate() {
+        return experienceDate;
+    }
+    
+    /**
+     * 设置体验日期
+     * 
+     * @param experienceDate 体验日期
+     */
+    public void setExperienceDate(Date experienceDate) {
+        this.experienceDate = experienceDate;
+    }
+    
+    /**
+     * 获取数量
+     * 
+     * @return Integer 数量
+     */
+    public Integer getQuantity() {
+        return quantity;
+    }
+    
+    /**
+     * 设置数量
+     * 
+     * @param quantity 数量
+     */
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+    
+    /**
+     * 获取库存锁定过期时间
+     * 
+     * @return Date 库存锁定过期时间
+     */
+    public Date getLockExpireTime() {
+        return lockExpireTime;
+    }
+    
+    /**
+     * 设置库存锁定过期时间
+     * 
+     * @param lockExpireTime 库存锁定过期时间
+     */
+    public void setLockExpireTime(Date lockExpireTime) {
+        this.lockExpireTime = lockExpireTime;
+    }
+    
+    /**
+     * 获取体验时间段
+     * 
+     * @return String 体验时间段
+     */
+    public String getExperienceTime() {
+        return experienceTime;
+    }
+    
+    /**
+     * 设置体验时间段
+     * 
+     * @param experienceTime 体验时间段
+     */
+    public void setExperienceTime(String experienceTime) {
+        this.experienceTime = experienceTime;
     }
 }

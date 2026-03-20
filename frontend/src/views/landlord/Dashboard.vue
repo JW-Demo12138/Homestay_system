@@ -82,6 +82,16 @@
               <div class="stat-label">待处理订单</div>
             </div>
           </div>
+          
+          <div class="stat-card" @click="goToMyExperiences">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4caf50, #81c784);">
+              <el-icon><Star /></el-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ stats.totalExperiences }}</div>
+              <div class="stat-label">体验项目</div>
+            </div>
+          </div>
         </div>
       </section>
       
@@ -98,9 +108,17 @@
                 <el-icon><Plus /></el-icon>
                 发布民宿
               </el-button>
+              <el-button @click="goToCreateExperience" class="secondary-button">
+                <el-icon><Star /></el-icon>
+                创建体验项目
+              </el-button>
               <el-button @click="goToMyHomestays" class="secondary-button">
                 <el-icon><House /></el-icon>
                 我的民宿
+              </el-button>
+              <el-button @click="goToMyExperiences" class="secondary-button">
+                <el-icon><Star /></el-icon>
+                我的体验项目
               </el-button>
               <el-button @click="goToMyOrders" class="secondary-button">
                 <el-icon><Document /></el-icon>
@@ -146,8 +164,9 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { homestayAPI } from '@/api/homestay'
 import { orderAPI } from '@/api/order'
+import { experienceAPI } from '@/api/experience'
 import { getImageUrl, formatPrice } from '@/utils'
-import { ArrowDown, House, Document, Money, Timer } from '@element-plus/icons-vue'
+import { ArrowDown, House, Document, Money, Timer, Star } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -156,7 +175,8 @@ const stats = ref({
   totalHomestays: 0,
   totalOrders: 0,
   totalRevenue: 0,
-  pendingOrders: 0
+  pendingOrders: 0,
+  totalExperiences: 0
 })
 
 const recentOrders = ref([])
@@ -174,6 +194,10 @@ const loadStats = async () => {
       .filter(o => o.status === 'PAID' || o.status === 'COMPLETED')
       .reduce((sum, o) => sum + (o.price || 0), 0)
       .toFixed(2)
+    
+    const experiencesResponse = await experienceAPI.getLandlordList()
+    const experiences = Array.isArray(experiencesResponse) ? experiencesResponse : (experiencesResponse.data || [])
+    stats.value.totalExperiences = experiences.length || 0
     
     recentOrders.value = orders.slice(0, 5)
   } catch (error) {
@@ -207,6 +231,14 @@ const goToMyHomestays = () => {
 
 const goToMyOrders = () => {
   router.push('/landlord/orders')
+}
+
+const goToCreateExperience = () => {
+  router.push('/landlord/experiences/create')
+}
+
+const goToMyExperiences = () => {
+  router.push('/landlord/experiences')
 }
 
 const handleLogout = async () => {
@@ -263,8 +295,8 @@ body {
 }
 
 .logo h1 {
-  margin: 0;
-  font-size: 24px;
+  margin: 0 0 10px 0;
+  font-size: 18px;
   font-weight: 700;
   color: var(--primary-color);
   cursor: pointer;

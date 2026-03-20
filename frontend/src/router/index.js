@@ -63,6 +63,24 @@ const routes = [
     meta: { requiresAuth: true, roles: ['LANDLORD'], title: '房东订单' }
   },
   {
+    path: '/landlord/experiences',
+    name: 'LandlordExperiences',
+    component: () => import('@/views/landlord/MyExperiences.vue'),
+    meta: { requiresAuth: true, roles: ['LANDLORD'], title: '我的体验项目' }
+  },
+  {
+    path: '/landlord/experiences/create',
+    name: 'CreateExperience',
+    component: () => import('@/views/landlord/CreateExperience.vue'),
+    meta: { requiresAuth: true, roles: ['LANDLORD'], title: '创建体验项目' }
+  },
+  {
+    path: '/landlord/experiences/:id/edit',
+    name: 'EditExperience',
+    component: () => import('@/views/landlord/EditExperience.vue'),
+    meta: { requiresAuth: true, roles: ['LANDLORD'], title: '编辑体验项目' }
+  },
+  {
     path: '/user',
     name: 'UserCenter',
     component: () => import('@/views/user/Profile.vue'),
@@ -79,6 +97,12 @@ const routes = [
     name: 'FeatureTopic',
     component: () => import('@/views/feature/FeatureTopic.vue'),
     meta: { title: '特色专题' }
+  },
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/Dashboard.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN'], title: '管理员中心' }
   }
 ]
 

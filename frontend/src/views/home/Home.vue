@@ -98,37 +98,37 @@
       </div>
     </section>
 
-    <!-- 4. 分类推荐 -->
+    <!-- 4. 特色体验 -->
     <section class="category-section" id="categories">
       <div class="container">
-        <h2 class="section-title">特色分类</h2>
-        <p class="section-subtitle">根据您的需求找到完美的住宿</p>
+        <h2 class="section-title">特色体验</h2>
+        <p class="section-subtitle">探索乡村特色，享受独特体验</p>
         
         <el-row :gutter="24">
           <el-col :xs="24" :sm="12" :md="8">
-            <div class="category-card" @click="goToCategory('海景')">
-              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20seaside%20homestay%20with%20ocean%20view&image_size=landscape_16_9" alt="海景民宿" />
+            <div class="category-card" @click="goToCategory('民俗手工制作')">
+              <img src="https://images.unsplash.com/photo-1584418601304-664028d36041?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="民俗手工制作" />
               <div class="category-content">
-                <h3>海景民宿</h3>
-                <p>面朝大海，春暖花开</p>
+                <h3>民俗手工制作</h3>
+                <p>体验传统工艺，制作特色手工艺品</p>
               </div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8">
-            <div class="category-card" @click="goToCategory('亲子')">
-              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=family%20friendly%20homestay%20with%20kids%20area&image_size=landscape_16_9" alt="亲子民宿" />
+            <div class="category-card" @click="goToCategory('农事实践体验')">
+              <img src="https://images.unsplash.com/photo-1524661189670-944e3b149321?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="农事实践体验" />
               <div class="category-content">
-                <h3>亲子民宿</h3>
-                <p>带娃出行，轻松愉快</p>
+                <h3>农事实践体验</h3>
+                <p>参与农耕活动，感受乡村生活</p>
               </div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8">
-            <div class="category-card" @click="goToCategory('情侣')">
-              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=romantic%20homestay%20for%20couples&image_size=landscape_16_9" alt="情侣民宿" />
+            <div class="category-card" @click="goToCategory('乡村美食烹饪')">
+              <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="乡村美食烹饪" />
               <div class="category-content">
-                <h3>情侣民宿</h3>
-                <p>浪漫时光，难忘回忆</p>
+                <h3>乡村美食烹饪</h3>
+                <p>学习传统烹饪，品尝乡村特色美食</p>
               </div>
             </div>
           </el-col>
@@ -142,29 +142,38 @@
         <h2 class="section-title">推荐民宿</h2>
         <p class="section-subtitle">为您精心挑选的优质住宿</p>
         
-        <el-row :gutter="24" v-loading="loading">
-          <el-col :xs="24" :sm="12" :md="8" v-for="homestay in recommendHomestays" :key="homestay.id">
-            <div class="modern-card" @click="goToDetail(homestay.id)">
-              <div class="card-image">
-                <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0])" :alt="homestay.name" />
+        <div class="homestay-grid" v-loading="loading">
+          <div class="modern-card" v-for="homestay in recommendHomestays" :key="homestay.id" @click="goToDetail(homestay.id)">
+            <div class="card-image">
+              <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0])" :alt="homestay.name" />
+              <button class="favorite-btn">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </button>
+              <div class="card-badge" v-if="homestay.isSuperHost">超赞房东</div>
+            </div>
+            <div class="card-body">
+              <h3 class="title">{{ homestay.name }}</h3>
+              <div class="card-header">
+                <span class="location">{{ homestay.address?.split(' ')[0] || '未知位置' }}</span>
+                <div class="rating">
+                  <span class="star-icon">★</span>
+                  <span>{{ homestay.rating || '4.8' }}</span>
+                </div>
               </div>
-              
-              <div class="card-body">
-                <div class="card-top">
-                  <span class="title">{{ homestay.name }}</span>
-                  <span class="rating">⭐ 4.8</span>
-                </div>
-                
-                <div class="address">{{ homestay.address }}</div>
-                
-                <div class="price">
-                  <span class="amount">¥{{ formatPrice(homestay.price) }}</span>
-                  <span class="unit">/晚</span>
-                </div>
+              <p class="details">{{ homestay.roomType || '整套公寓' }} · {{ homestay.bedrooms || 1 }}间卧室 · {{ homestay.beds || 1 }}张床 · {{ homestay.bathrooms || 1 }}间浴室</p>
+              <div class="price-row">
+                <span class="price-label">¥{{ formatPrice(homestay.price) }}</span>
+                <span class="price-unit">/晚</span>
               </div>
             </div>
-          </el-col>
-        </el-row>
+          </div>
+        </div>
+        
+        <div class="load-more">
+          <button @click="loadMore">加载更多</button>
+        </div>
       </div>
     </section>
 
@@ -249,13 +258,21 @@ const recommendHomestays = ref([])
 // 加载热门城市
 const loadHotCities = async () => {
   try {
-    hotCities.value = await cityAPI.getHotCities()
+    // 使用硬编码的城市列表，确保显示用户要求的城市
+    hotCities.value = [
+      { id: 1, name: '深圳' },
+      { id: 2, name: '广州' },
+      { id: 3, name: '佛山' },
+      { id: 4, name: '杭州' },
+      { id: 5, name: '上海' },
+      { id: 6, name: '北京' },
+      { id: 7, name: '成都' },
+      { id: 8, name: '厦门' },
+      { id: 9, name: '重庆' }
+    ]
   } catch (error) {
     console.error('加载热门城市失败:', error)
-    // 如果是403错误，使用空数组，避免页面显示错误
-    if (error.response?.status === 403) {
-      hotCities.value = []
-    }
+    hotCities.value = []
   }
 }
 
@@ -353,15 +370,9 @@ const scrollToRecommend = () => {
 
 // 获取城市图片
 const getCityImage = (cityName) => {
-  const cityImages = {
-    '杭州': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hangzhou%20west%20lake%20scenic%20view&image_size=landscape_16_9',
-    '上海': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanghai%20skyline%20modern%20city&image_size=landscape_16_9',
-    '北京': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beijing%20forbidden%20city%20traditional&image_size=landscape_16_9',
-    '广州': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guangzhou%20canton%20tower%20modern&image_size=landscape_16_9',
-    '深圳': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shenzhen%20modern%20city%20skyline&image_size=landscape_16_9',
-    '成都': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chengdu%20traditional%20panda%20city&image_size=landscape_16_9'
-  }
-  return cityImages[cityName] || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20city%20skyline&image_size=landscape_16_9'
+  // 根据城市名称返回对应的图片路径
+  // 用户可以按照城市命名上传图片，比如深圳.jpg、广州.jpg等
+  return `/image/hot_cities/${cityName}.jpg`
 }
 
 // 组件挂载时加载数据
@@ -372,11 +383,39 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== Airbnb Design Tokens ===== */
+:root {
+  /* 品牌色 */
+  --airbnb-red: #FF5A5F;
+  --airbnb-red-dark: #E00B41;
+  --airbnb-black: #000000;
+  --airbnb-gray: #717171;
+  --airbnb-light-gray: #DDDDDD;
+  --airbnb-bg: #F7F7F7;
+  
+  /* 字体栈 - 匹配 Airbnb 的 Cereal 字体 */
+  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  
+  /* 间距系统（8px 基础） */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  
+  /* 圆角 */
+  --radius: 12px;
+  --radius-lg: 16px;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
 /* 全局样式重置 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: var(--font-stack);
 }
 
 /* 顶部导航 */
@@ -402,10 +441,10 @@ onMounted(() => {
 }
 
 .logo h1 {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
-  color: #667eea;
-  margin: 0;
+  color: var(--airbnb-red);
+  margin: 0 0 10px 0;
   cursor: pointer;
 }
 
@@ -416,13 +455,13 @@ onMounted(() => {
 
 .nav-links a {
   text-decoration: none;
-  color: #333;
+  color: var(--airbnb-black);
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .nav-links a:hover {
-  color: #667eea;
+  color: var(--airbnb-red);
 }
 
 .user-actions {
@@ -432,13 +471,14 @@ onMounted(() => {
 }
 
 .login-btn {
-  border: 1px solid #667eea;
-  color: #667eea;
+  border: 1px solid var(--airbnb-black);
+  color: var(--airbnb-black);
 }
 
 .register-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--airbnb-red);
   border: none;
+  color: rgb(0, 0, 0);
 }
 
 .user-dropdown {
@@ -452,7 +492,7 @@ onMounted(() => {
 }
 
 .user-dropdown:hover {
-  background-color: #f5f7fa;
+  background-color: var(--airbnb-bg);
 }
 
 .username {
@@ -508,9 +548,10 @@ onMounted(() => {
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--airbnb-red);
   border: none;
   padding: 0 24px;
+  color: white;
 }
 
 /* 通用容器 */
@@ -526,14 +567,16 @@ onMounted(() => {
   font-weight: 700;
   text-align: center;
   margin-bottom: 12px;
-  color: #333;
+  color: var(--airbnb-black);
+  letter-spacing: -0.5px;
 }
 
 .section-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   text-align: center;
   margin-bottom: 48px;
-  color: #666;
+  color: var(--airbnb-gray);
+  font-weight: 400;
 }
 
 /* 城市区域 */
@@ -542,21 +585,28 @@ onMounted(() => {
 }
 
 .city-card {
-  border-radius: 20px;
+  border-radius: var(--radius);
   overflow: hidden;
   position: relative;
   cursor: pointer;
   transition: transform 0.3s ease;
   height: 200px;
+  box-shadow: var(--shadow-sm);
 }
 
 .city-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
 .city-card:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.city-card:hover img {
   transform: scale(1.05);
 }
 
@@ -573,27 +623,34 @@ onMounted(() => {
 /* 分类区域 */
 .category-section {
   padding: 80px 0;
-  background-color: #f6f7fb;
+  background-color: var(--airbnb-bg);
   margin: 80px 0;
 }
 
 .category-card {
-  border-radius: 20px;
+  border-radius: var(--radius);
   overflow: hidden;
   position: relative;
   cursor: pointer;
   transition: transform 0.3s ease;
   height: 250px;
+  box-shadow: var(--shadow-sm);
 }
 
 .category-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
 .category-card:hover {
   transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+.category-card:hover img {
+  transform: scale(1.05);
 }
 
 .category-content {
@@ -620,77 +677,238 @@ onMounted(() => {
 /* 推荐民宿区域 */
 .recommend-section {
   padding: 80px 0;
+  background-color: white;
 }
 
+/* 网格布局 - 桌面端 4 列 */
+.homestay-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px 24px;
+  margin-bottom: 48px;
+}
+
+/* 大屏 5 列 */
+@media (min-width: 1600px) {
+  .homestay-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 40px 24px;
+  }
+}
+
+/* 小屏 3 列 */
+@media (max-width: 1200px) {
+  .homestay-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 平板 2 列 */
+@media (max-width: 768px) {
+  .homestay-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 16px;
+  }
+}
+
+/* 手机 1 列 */
+@media (max-width: 480px) {
+  .homestay-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Airbnb 卡片样式 */
 .modern-card {
-  border-radius: 20px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
   cursor: pointer;
-  background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  /* 无背景色，无大阴影，极简 */
 }
 
-.modern-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+/* 图片容器 - 3:2 比例（Airbnb 标准） */
+.card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/2;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: var(--space-1);
+  background-color: #EBEBEB;
+  box-shadow: var(--shadow-sm);
 }
 
 .card-image img {
   width: 100%;
-  aspect-ratio: 4/3;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
 }
 
+/* 悬停效果：图片轻微放大 */
+.modern-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+/* 收藏按钮 - 右上角心形 */
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+  transition: transform 0.2s ease;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+}
+
+.favorite-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: rgba(0,0,0,0.5);
+  stroke: white;
+  stroke-width: 2;
+  transition: fill 0.2s ease;
+}
+
+.favorite-btn:hover svg,
+.favorite-btn.active svg {
+  fill: var(--airbnb-red);
+  stroke: var(--airbnb-red);
+}
+
+/* 标签 - 左上角（超赞房东等） */
+.card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--airbnb-black);
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 卡片内容 - Airbnb 信息层级 */
 .card-body {
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
 }
 
-.card-top {
+/* 第一行：位置 + 评分（两端对齐） */
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  font-size: 15px;
+  color: var(--airbnb-gray);
 }
 
-.title {
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
+.location {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .rating {
-  font-size: 14px;
-  color: #ff9800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  color: var(--airbnb-black);
+  font-weight: 500;
 }
 
-.address {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 12px;
+.star-icon {
+  color: var(--airbnb-black);
+  font-size: 12px;
 }
 
-.price {
+/* 第二行：房源标题（加粗） */
+.title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--airbnb-black);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* 第三行：距离/日期（灰色） */
+.details {
+  font-size: 15px;
+  color: var(--airbnb-gray);
+  margin-top: 2px;
+}
+
+/* 第四行：价格 */
+.price-row {
   display: flex;
   align-items: baseline;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 15px;
 }
 
-.amount {
-  font-size: 20px;
-  font-weight: bold;
-  color: #ff5722;
+.price-label {
+  font-weight: 600;
+  color: var(--airbnb-black);
 }
 
-.unit {
-  font-size: 14px;
-  color: #666;
-  margin-left: 4px;
+.price-unit {
+  color: var(--airbnb-black);
+  font-weight: 400;
+}
+
+/* 悬停状态优化 */
+.modern-card:hover .title {
+  color: var(--airbnb-gray);
+}
+
+/* 分页/加载更多（Airbnb 风格） */
+.load-more {
+  margin-top: 48px;
+  text-align: center;
+}
+
+.load-more button {
+  padding: 14px 24px;
+  background: transparent;
+  border: 1px solid var(--airbnb-black);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--airbnb-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-stack);
+}
+
+.load-more button:hover {
+  background: var(--airbnb-bg);
+  border-color: var(--airbnb-black);
 }
 
 /* 品牌理念区 */
 .brand-section {
   padding: 80px 0;
-  background-color: #f6f7fb;
+  background-color: var(--airbnb-bg);
   margin: 80px 0;
 }
 
@@ -720,40 +938,43 @@ onMounted(() => {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: #333;
+  color: var(--airbnb-black);
+  letter-spacing: -0.5px;
 }
 
 .brand-text p {
   font-size: 16px;
   line-height: 1.6;
   margin-bottom: 24px;
-  color: #666;
+  color: var(--airbnb-gray);
 }
 
 .explore-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--airbnb-red);
   border: none;
   padding: 12px 24px;
+  color: white;
 }
 
 .brand-image img {
   width: 100%;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
 }
 
-/* Footer */
+/* Footer - GitHub Style */
 .footer {
-  background-color: #333;
-  color: white;
-  padding: 80px 0 40px;
+  background-color: #161b22;
+  color: #f0f6fc;
+  padding: 40px 0 24px;
+  border-top: 1px solid #30363d;
 }
 
 .footer-content {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 48px;
-  margin-bottom: 48px;
+  gap: 32px;
+  margin-bottom: 32px;
 }
 
 @media (min-width: 768px) {
@@ -769,15 +990,16 @@ onMounted(() => {
 }
 
 .footer-col h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  color: #f0f6fc;
 }
 
 .footer-col p {
   font-size: 14px;
-  line-height: 1.6;
-  color: #ccc;
+  line-height: 1.5;
+  color: #8b949e;
 }
 
 .footer-col ul {
@@ -785,40 +1007,41 @@ onMounted(() => {
 }
 
 .footer-col ul li {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .footer-col ul li a {
-  color: #ccc;
+  color: #8b949e;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .footer-col ul li a:hover {
-  color: #667eea;
+  color: #58a6ff;
+  text-decoration: underline;
 }
 
 .social-links {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .social-links a {
-  color: #ccc;
+  color: #8b949e;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .social-links a:hover {
-  color: #667eea;
+  color: #58a6ff;
 }
 
 .footer-bottom {
-  border-top: 1px solid #555;
-  padding-top: 24px;
+  border-top: 1px solid #30363d;
+  padding-top: 20px;
   text-align: center;
-  font-size: 14px;
-  color: #999;
+  font-size: 12px;
+  color: #8b949e;
 }
 
 /* 响应式设计 */
@@ -842,5 +1065,24 @@ onMounted(() => {
   .nav-links {
     display: none;
   }
+}
+
+/* 滚动条美化（浏览器端专属） */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--airbnb-light-gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--airbnb-gray);
 }
 </style>

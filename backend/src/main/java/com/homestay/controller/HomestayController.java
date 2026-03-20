@@ -127,4 +127,52 @@ public class HomestayController {
         // 调用民宿服务批量导入民宿
         return homestayService.importHomestays(homestays);
     }
+    
+    /**
+     * 审核民宿接口
+     * @param reviewData 审核数据，包含民宿ID、审核状态和备注
+     * @return 审核结果
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/review")
+    public Result reviewHomestay(@RequestBody Map<String, Object> reviewData) {
+        Long id = Long.valueOf(reviewData.get("id").toString());
+        Integer status = Integer.valueOf(reviewData.get("status").toString());
+        String remark = (String) reviewData.get("remark");
+        return homestayService.reviewHomestay(id, status, remark);
+    }
+    
+    /**
+     * 下架/上架民宿接口
+     * @param id 民宿ID
+     * @param statusData 状态数据，包含状态值
+     * @return 操作结果
+     */
+    @PreAuthorize("hasRole('LANDLORD')")
+    @PutMapping("/status/{id}")
+    public Result updateHomestayStatus(@PathVariable Long id, @RequestBody Map<String, Integer> statusData) {
+        Integer status = statusData.get("status");
+        return homestayService.updateHomestayStatus(id, status);
+    }
+    
+    /**
+     * 按名称和状态查询民宿接口
+     * @param params 查询参数，包含名称关键词和状态
+     * @return 查询结果
+     */
+    @PreAuthorize("hasRole('LANDLORD')")
+    @GetMapping("/query")
+    public Result queryHomestayByNameAndStatus(@RequestParam Map<String, Object> params) {
+        return homestayService.queryHomestayByNameAndStatus(params);
+    }
+    
+    /**
+     * 获取待审核的民宿列表接口
+     * @return 待审核民宿列表
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/pending")
+    public Result getPendingHomestays() {
+        return homestayService.getPendingHomestays();
+    }
 }
