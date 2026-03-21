@@ -631,12 +631,15 @@ onMounted(() => {
    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); 
  } 
  
- .gallery-image { 
-   width: 100%; 
-   height: 600px; 
-   object-fit: cover; 
-   border-radius: 10px; 
- } 
+ .gallery-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  min-width: 100%;
+  min-height: 100%;
+} 
  
  /* Info and Booking Section */ 
  .info-booking-section { 
@@ -911,6 +914,9 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .experience-info {

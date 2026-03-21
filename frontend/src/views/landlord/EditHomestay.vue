@@ -177,7 +177,7 @@
                 <el-icon><Plus /></el-icon>
                 <template #tip>
                   <div class="upload-tip">
-                    支持 JPG、PNG 格式，单张不超过 2MB
+                    支持所有图片格式，单张不超过 10MB
                   </div>
                 </template>
               </el-upload>
@@ -332,15 +332,15 @@ const updateUploadHeaders = () => {
 
 const beforeImageUpload = (file) => {
   const isImage = file.type.startsWith('image/')
-  const isLt2M = file.size / 1024 / 1024 < 2
+  const isLt10M = file.size / 1024 / 1024 < 10
   
   if (!isImage) {
     ElMessage.error('只能上传图片文件!')
     return false
   }
   
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过2MB!')
+  if (!isLt10M) {
+    ElMessage.error('图片大小不能超过10MB!')
     return false
   }
   

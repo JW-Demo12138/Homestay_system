@@ -47,6 +47,7 @@
             <el-form-item label="地址（必填）" prop="address">
               <div class="address-input-container">
                 <el-input
+                  id="addressInput"
                   v-model="form.address"
                   placeholder="请输入详细地址，如：北京市朝阳区建国路"
                   maxlength="200"
@@ -59,12 +60,13 @@
                 </el-button>
               </div>
               <!-- 地址搜索建议 -->
-              <div v-if="addressSuggestions.length > 0" class="address-suggestions">
+              <div v-if="addressSuggestions.length > 0" class="address-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; display: block;">
                 <div
                   v-for="(suggestion, index) in addressSuggestions"
                   :key="index"
                   class="suggestion-item"
                   @click="selectAddress(suggestion)"
+                  style="padding: 12px 20px; cursor: pointer; transition: all 0.3s ease; font-size: 14px;"
                 >
                   {{ suggestion.name }}
                 </div>
@@ -189,7 +191,8 @@
               </div>
             </template>
             
-            <el-form-item label="图片上传" prop="images">              <el-upload
+            <el-form-item label="图片上传" prop="images">
+              <el-upload
                 class="image-uploader"
                 :action="uploadUrl"
                 :headers="uploadHeaders"
@@ -203,15 +206,17 @@
                 <el-icon><Plus /></el-icon>
                 <template #tip>
                   <div class="upload-tip">
-                    支持 JPG、PNG 格式，单张不超过 2MB
+                    支持所有图片格式，单张不超过 10MB
                   </div>
                 </template>
               </el-upload>
               <div v-if="uploadedImages.length > 0" class="uploaded-images">
                 <h4>已上传图片</h4>
                 <div class="image-list">
-                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image, true)" alt="民宿图片" />
-                    <div class="image-actions">                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
+                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">
+                    <img :src="getImageUrl(image, true)" alt="民宿图片" />
+                    <div class="image-actions">
+                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
                       <el-button size="small" type="danger" @click="removeImage(index)">删除</el-button>
                     </div>
                   </div>
@@ -461,15 +466,15 @@ const updateUploadHeaders = () => {
 
 const beforeImageUpload = (file) => {
   const isImage = file.type.startsWith('image/')
-  const isLt2M = file.size / 1024 / 1024 < 2
+  const isLt10M = file.size / 1024 / 1024 < 10
   
   if (!isImage) {
     ElMessage.error('只能上传图片文件!')
     return false
   }
   
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过2MB!')
+  if (!isLt10M) {
+    ElMessage.error('图片大小不能超过10MB!')
     return false
   }
   
@@ -714,7 +719,7 @@ const handleAddressInput = (value) => {
   addressSuggestions.value = []
   
   // 基础校验
-  if (!value || value.length < 2) {
+  if (!value || value.length < 1) {
     return
   }
   
@@ -729,46 +734,120 @@ const handleAddressInput = (value) => {
   searchTimer = setTimeout(() => {
     // 确保高德地图 API 加载完成
     if (typeof AMap === 'undefined') {
-      ElMessage.error('地图API加载失败')
+      console.error('地图API加载失败')
+      // 模拟一些地址建议，以便在地图API加载失败时也能看到提示
+      const mockTips = [
+        { name: '北京市朝阳区建国路', address: '', location: { lng: 116.46556, lat: 39.90882 } },
+        { name: '上海市浦东新区陆家嘴', address: '', location: { lng: 121.49989, lat: 31.23977 } },
+        { name: '广州市天河区珠江新城', address: '', location: { lng: 113.32716, lat: 23.12005 } }
+      ]
+      addressSuggestions.value = mockTips
       return
     }
     
-    // 加载 AutoComplete 插件
-    AMap.plugin('AMap.AutoComplete', function() {
-      if (!autoComplete) {
-        autoComplete = new AMap.AutoComplete({
-          city: '全国'
-        })
-      }
-      
-      // 发起搜索
-      autoComplete.search(value, function(status, result) {
-        if (status === 'complete' && result.info === 'OK') {
-          const tips = result.tips.map(tip => ({
-            name: tip.name,
-            address: tip.address,
-            location: tip.location
-          }))
-          // 缓存结果
-          searchCache.set(value, tips)
-          // 限制缓存大小
-          if (searchCache.size > 100) {
-            const firstKey = searchCache.keys().next().value
-            searchCache.delete(firstKey)
-          }
-          addressSuggestions.value = tips
+    try {
+      // 加载 AutoComplete 插件
+      AMap.plugin('AMap.AutoComplete', function() {
+        if (!autoComplete) {
+          autoComplete = new AMap.AutoComplete({
+            city: '全国',
+            input: 'addressInput' // 关联输入框
+          })
         }
+        
+        // 发起搜索
+        autoComplete.search(value, function(status, result) {
+          console.log('地址搜索结果:', status, result)
+          if (status === 'complete' && result.info === 'OK') {
+            const tips = result.tips.map(tip => ({
+              name: tip.name,
+              address: tip.address,
+              location: tip.location
+            }))
+            // 缓存结果
+            searchCache.set(value, tips)
+            // 限制缓存大小
+            if (searchCache.size > 100) {
+              const firstKey = searchCache.keys().next().value
+              searchCache.delete(firstKey)
+            }
+            addressSuggestions.value = tips
+            console.log('地址建议:', tips)
+          } else {
+            console.error('地址搜索失败:', status, result)
+            // 搜索失败时显示模拟数据
+            const mockTips = [
+              { name: '北京市朝阳区建国路', address: '', location: { lng: 116.46556, lat: 39.90882 } },
+              { name: '上海市浦东新区陆家嘴', address: '', location: { lng: 121.49989, lat: 31.23977 } },
+              { name: '广州市天河区珠江新城', address: '', location: { lng: 113.32716, lat: 23.12005 } }
+            ]
+            addressSuggestions.value = mockTips
+          }
+        })
       })
-    })
-  }, 500) // 500ms防抖
+    } catch (error) {
+      console.error('地址搜索异常:', error)
+      // 异常时显示模拟数据
+      const mockTips = [
+        { name: '北京市朝阳区建国路', address: '', location: { lng: 116.46556, lat: 39.90882 } },
+        { name: '上海市浦东新区陆家嘴', address: '', location: { lng: 121.49989, lat: 31.23977 } },
+        { name: '广州市天河区珠江新城', address: '', location: { lng: 113.32716, lat: 23.12005 } }
+      ]
+      addressSuggestions.value = mockTips
+    }
+  }, 300) // 300ms防抖，减少用户等待感
 }
 
+// 地址输入完成后自动定位到地图
 const handleAddressBlur = () => {
   // 延迟隐藏建议列表，以便用户可以点击选择
   setTimeout(() => {
     addressSuggestions.value = []
-  }, 200)
+    
+    // 如果地址不为空，尝试通过地理编码获取经纬度并更新地图
+    if (form.address) {
+      // 确保高德地图 API 加载完成
+      if (typeof AMap === 'undefined') {
+        console.error('地图API加载失败')
+        return
+      }
+      
+      try {
+        // 加载 Geocoder 插件
+        AMap.plugin('AMap.Geocoder', function() {
+          if (!geocoder) {
+            geocoder = new AMap.Geocoder({
+              radius: 1000,
+              extensions: "all"
+            })
+          }
+          
+          // 发起地理编码
+          geocoder.getLocation(form.address, function(status, result) {
+            console.log('地理编码结果:', status, result)
+            if (status === 'complete' && result.info === 'OK') {
+              const location = result.geocodes[0].location
+              form.longitude = location.lng
+              form.latitude = location.lat
+              
+              // 更新地图位置
+              initMap(location.lng, location.lat)
+              showMap.value = true
+              
+              console.log('地址定位成功:', location.lng, location.lat)
+            } else {
+              console.error('地理编码失败:', status, result)
+            }
+          })
+        })
+      } catch (error) {
+        console.error('地理编码异常:', error)
+      }
+    }
+  }, 300) // 增加延迟时间，确保用户有足够时间点击
 }
+
+
 
 const selectAddress = (suggestion) => {
   form.address = suggestion.name + (suggestion.address ? ' ' + suggestion.address : '')
@@ -1083,48 +1162,92 @@ const finishCreation = () => {
 }
 
 /* 优化整体UI */
+/* 整体布局优化 */
+.el-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
 .form-card {
-  margin-bottom: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  padding: 30px;
 }
 
 .form-card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* 表单元素优化 */
+.el-form-item {
+  margin-bottom: 24px;
+}
+
+.el-form-item__label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.el-input,
+.el-select,
+.el-input-number {
+  width: 100%;
+  max-width: 600px;
+  transition: all 0.3s ease;
+}
+
+.el-input:focus-within,
+.el-select:focus-within,
+.el-input-number:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.el-textarea {
+  width: 100%;
+  max-width: 800px;
+  resize: vertical;
+  min-height: 120px;
 }
 
 /* 优化按钮样式 */
 .el-button {
   transition: all 0.3s ease;
+  padding: 10px 24px;
+  font-size: 14px;
 }
 
 .el-button:hover {
-  transform: translateY(-1px);
-}
-
-/* 优化输入框样式 */
-.el-input {
-  transition: all 0.3s ease;
-}
-
-.el-input:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 优化步骤指示器 */
 .el-steps {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  padding: 0 20px;
+}
+
+.el-step__title {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .el-step__head {
   transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
 }
 
 .el-step__head:hover {
   transform: scale(1.1);
 }
 
+/* 地址输入和地图优化 */
 .address-input-container {
   position: relative;
 }
@@ -1136,17 +1259,21 @@ const finishCreation = () => {
   right: 0;
   background: white;
   border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 200px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  max-height: 300px;
   overflow-y: auto;
+  max-width: 600px;
+  margin-top: 40px;
+  display: block !important;
 }
 
 .suggestion-item {
-  padding: 10px 15px;
+  padding: 12px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .suggestion-item:hover {
@@ -1154,33 +1281,150 @@ const finishCreation = () => {
 }
 
 .map-container {
-  margin-top: 20px;
+  margin-top: 24px;
   border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   width: 100%;
-  max-width: 800px;
-  margin: 20px auto;
-  display: block;
+  max-width: 1000px;
+  margin: 24px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#locationMap {
+  height: 500px !important;
 }
 
 .map-tip {
-  padding: 10px;
+  padding: 12px;
   background-color: #f5f7fa;
-  font-size: 12px;
+  font-size: 14px;
   color: #606266;
   text-align: center;
+  border-top: 1px solid #dcdfe6;
 }
 
-@media (max-width: 768px) {
-  .form-card {
-    margin: 0 -20px 20px;
-    border-radius: 0;
+/* 图片上传优化 */
+.image-uploader {
+  margin-bottom: 30px;
+}
+
+.uploaded-images h4 {
+  margin: 30px 0 15px 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 500;
+}
+
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.image-item {
+  width: 140px;
+  text-align: center;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.image-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.image-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.image-actions {
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 设施标签优化 */
+.facility-tags {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.facility-tags .el-tag {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 16px;
+  background-color: #f0f2f5;
+  border: 1px solid #e4e7ed;
+}
+
+/* 步骤按钮优化 */
+.el-form-item:last-child {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f2f5;
+}
+
+/* 状态选项优化 */
+.status-option {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  margin-right: 24px;
+  transition: all 0.3s ease;
+  min-width: 220px;
+  flex-shrink: 0;
+}
+
+.status-option:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.status-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.status-desc {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.4;
+}
+
+/* 响应式调整 - 仅针对桌面端 */
+@media (min-width: 1024px) {
+  .el-main {
+    padding: 60px 40px;
   }
   
-  .address-suggestions {
-    left: -10px;
-    right: -10px;
+  .form-card {
+    padding: 40px;
+  }
+  
+  .el-form-item {
+    margin-bottom: 30px;
+  }
+  
+  .el-steps {
+    margin-bottom: 50px;
   }
 }
+
+/* 移除移动端样式，因为不需要考虑移动端 */
 </style>

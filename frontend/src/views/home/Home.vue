@@ -107,7 +107,7 @@
         <el-row :gutter="24">
           <el-col :xs="24" :sm="12" :md="8">
             <div class="category-card" @click="goToCategory('民俗手工制作')">
-              <img src="https://images.unsplash.com/photo-1584418601304-664028d36041?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="民俗手工制作" />
+              <img src="/image/Special reservation/手工.jpg" alt="民俗手工制作" />
               <div class="category-content">
                 <h3>民俗手工制作</h3>
                 <p>体验传统工艺，制作特色手工艺品</p>
@@ -116,7 +116,7 @@
           </el-col>
           <el-col :xs="24" :sm="12" :md="8">
             <div class="category-card" @click="goToCategory('农事实践体验')">
-              <img src="https://images.unsplash.com/photo-1524661189670-944e3b149321?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="农事实践体验" />
+              <img src="/image/Special reservation/农事.jpg" alt="农事实践体验" />
               <div class="category-content">
                 <h3>农事实践体验</h3>
                 <p>参与农耕活动，感受乡村生活</p>
@@ -683,16 +683,20 @@ onMounted(() => {
 /* 网格布局 - 桌面端 4 列 */
 .homestay-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 32px 24px;
   margin-bottom: 48px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* 大屏 5 列 */
+/* 大屏 3 列 */
 @media (min-width: 1600px) {
   .homestay-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 40px 24px;
+    max-width: 1400px;
   }
 }
 
@@ -700,6 +704,7 @@ onMounted(() => {
 @media (max-width: 1200px) {
   .homestay-grid {
     grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
   }
 }
 
@@ -708,6 +713,7 @@ onMounted(() => {
   .homestay-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px 16px;
+    max-width: 600px;
   }
 }
 
@@ -715,6 +721,7 @@ onMounted(() => {
 @media (max-width: 480px) {
   .homestay-grid {
     grid-template-columns: 1fr;
+    max-width: 400px;
   }
 }
 
@@ -723,18 +730,23 @@ onMounted(() => {
   position: relative;
   cursor: pointer;
   /* 无背景色，无大阴影，极简 */
+  width: 100%;
 }
 
 /* 图片容器 - 3:2 比例（Airbnb 标准） */
 .card-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/2;
+  height: 200px;
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: var(--space-1);
   background-color: #EBEBEB;
   box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
 }
 
 .card-image img {
@@ -743,6 +755,8 @@ onMounted(() => {
   object-fit: cover;
   transition: transform 0.3s ease;
   display: block;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 /* 悬停效果：图片轻微放大 */

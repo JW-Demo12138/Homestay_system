@@ -362,10 +362,13 @@ onMounted(() => {
 
 .homestay-card img {
   width: 100%;
-  height: 280px;
+  height: 200px;
   object-fit: cover;
   border-radius: var(--radius) var(--radius) 0 0;
   transition: transform 0.3s ease;
+  display: block;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .homestay-card:hover img {
