@@ -28,10 +28,33 @@
             <div v-loading="loading">
               <el-empty v-if="allOrders.length === 0" description="暂无订单" />
               <el-table v-else :data="allOrders" style="width: 100%">
-                <el-table-column prop="homestayName" label="民宿名称" />
-                <el-table-column prop="homestayAddress" label="民宿地址" />
-                <el-table-column prop="checkInDate" label="入住日期" width="120" />
-                <el-table-column prop="checkOutDate" label="退房日期" width="120" />
+                <el-table-column label="订单类型" width="120">
+                  <template #default="{ row }">
+                    <el-tag :type="row.type === 'EXPERIENCE' ? 'info' : 'primary'">
+                      {{ row.type === 'EXPERIENCE' ? '体验项目' : '民宿' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="名称" width="200">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.experienceName : row.homestayName }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="地址" width="300">
+                  <template #default="{ row }">
+                    {{ row.homestayAddress }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="日期" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.bookingDate : row.checkInDate }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="时间" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.timeSlot : row.checkOutDate }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="price" label="价格" width="120">
                   <template #default="{ row }">
                     ¥{{ formatPrice(row.price) }}
@@ -64,10 +87,33 @@
             <div v-loading="loading">
               <el-empty v-if="pendingOrders.length === 0" description="暂无订单" />
               <el-table v-else :data="pendingOrders" style="width: 100%">
-                <el-table-column prop="homestayName" label="民宿名称" />
-                <el-table-column prop="homestayAddress" label="民宿地址" />
-                <el-table-column prop="checkInDate" label="入住日期" width="120" />
-                <el-table-column prop="checkOutDate" label="退房日期" width="120" />
+                <el-table-column label="订单类型" width="120">
+                  <template #default="{ row }">
+                    <el-tag :type="row.type === 'EXPERIENCE' ? 'info' : 'primary'">
+                      {{ row.type === 'EXPERIENCE' ? '体验项目' : '民宿' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="名称" width="200">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.experienceName : row.homestayName }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="地址" width="300">
+                  <template #default="{ row }">
+                    {{ row.homestayAddress }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="日期" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.bookingDate : row.checkInDate }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="时间" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.timeSlot : row.checkOutDate }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="price" label="价格" width="120">
                   <template #default="{ row }">
                     ¥{{ formatPrice(row.price) }}
@@ -100,10 +146,33 @@
             <div v-loading="loading">
               <el-empty v-if="paidOrders.length === 0" description="暂无订单" />
               <el-table v-else :data="paidOrders" style="width: 100%">
-                <el-table-column prop="homestayName" label="民宿名称" />
-                <el-table-column prop="homestayAddress" label="民宿地址" />
-                <el-table-column prop="checkInDate" label="入住日期" width="120" />
-                <el-table-column prop="checkOutDate" label="退房日期" width="120" />
+                <el-table-column label="订单类型" width="120">
+                  <template #default="{ row }">
+                    <el-tag :type="row.type === 'EXPERIENCE' ? 'info' : 'primary'">
+                      {{ row.type === 'EXPERIENCE' ? '体验项目' : '民宿' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="名称" width="200">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.experienceName : row.homestayName }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="地址" width="300">
+                  <template #default="{ row }">
+                    {{ row.homestayAddress }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="日期" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.bookingDate : row.checkInDate }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="时间" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.timeSlot : row.checkOutDate }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="price" label="价格" width="120">
                   <template #default="{ row }">
                     ¥{{ formatPrice(row.price) }}
@@ -136,10 +205,33 @@
             <div v-loading="loading">
               <el-empty v-if="completedOrders.length === 0" description="暂无订单" />
               <el-table v-else :data="completedOrders" style="width: 100%">
-                <el-table-column prop="homestayName" label="民宿名称" />
-                <el-table-column prop="homestayAddress" label="民宿地址" />
-                <el-table-column prop="checkInDate" label="入住日期" width="120" />
-                <el-table-column prop="checkOutDate" label="退房日期" width="120" />
+                <el-table-column label="订单类型" width="120">
+                  <template #default="{ row }">
+                    <el-tag :type="row.type === 'EXPERIENCE' ? 'info' : 'primary'">
+                      {{ row.type === 'EXPERIENCE' ? '体验项目' : '民宿' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="名称" width="200">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.experienceName : row.homestayName }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="地址" width="300">
+                  <template #default="{ row }">
+                    {{ row.homestayAddress }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="日期" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.bookingDate : row.checkInDate }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="时间" width="120">
+                  <template #default="{ row }">
+                    {{ row.type === 'EXPERIENCE' ? row.timeSlot : row.checkOutDate }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="price" label="价格" width="120">
                   <template #default="{ row }">
                     ¥{{ formatPrice(row.price) }}

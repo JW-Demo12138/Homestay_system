@@ -28,7 +28,7 @@
           @click="goDetail(item.id)"
         >
           <img 
-            :src="((item.imageUrl || '').split(',')[0] || defaultImg)" 
+            :src="getImageUrl(((item.imageUrl || '').split(',')[0] || defaultImg), true)" 
             @error="handleImgError"
           />
           <div class="info">
@@ -48,6 +48,9 @@ import { ref, onMounted, watch, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { experienceAPI } from '@/api/experience'
 import { homestayAPI } from '@/api/homestay'
+import * as utils from '@/utils'
+
+const getImageUrl = utils.getImageUrl
 
 const route = useRoute()
 const router = useRouter()
@@ -70,8 +73,8 @@ const loadData = async (tagValue) => {
   loading.value = true
 
   try {
-    // 获取该类型的体验项目
-    const experiencePage = await experienceAPI.getList({ type: tagValue, status: 1 })
+    // 获取该类型的体验项目（包括所有状态）
+    const experiencePage = await experienceAPI.getList({ type: tagValue })
     const experiences = experiencePage?.records || []
     
     // 提取关联的民宿ID

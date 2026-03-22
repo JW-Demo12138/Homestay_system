@@ -48,6 +48,12 @@
           </el-card>
           <el-card class="stat-card">
             <div class="stat-item">
+              <h3>{{ pendingHomestaysCount }}</h3>
+              <p>待审核民宿</p>
+            </div>
+          </el-card>
+          <el-card class="stat-card">
+            <div class="stat-item">
               <h3>{{ totalExperiencesCount }}</h3>
               <p>总体验项目</p>
             </div>
@@ -100,6 +106,40 @@
             <el-empty description="暂无待审核体验项目" />
           </div>
         </el-card>
+        
+        <!-- 待审核民宿 -->
+        <el-card class="section-card">
+          <template #header>
+            <div class="card-header">
+              <h3>待审核民宿</h3>
+              <span class="card-tip">审核民宿信息，确保内容符合平台规范</span>
+            </div>
+          </template>
+          
+          <div v-if="pendingHomestays.length > 0" class="homestays-list">
+            <el-table :data="pendingHomestays" style="width: 100%">
+              <el-table-column prop="name" label="民宿名称" width="200"></el-table-column>
+              <el-table-column prop="address" label="地址"></el-table-column>
+              <el-table-column prop="roomType" label="房型" width="120"></el-table-column>
+              <el-table-column prop="price" label="价格" width="100">
+                <template #default="scope">
+                  ¥{{ scope.row.price }}/晚
+                </template>
+              </el-table-column>
+              <el-table-column prop="ownerId" label="房东ID" width="100"></el-table-column>
+              <el-table-column label="操作" width="200">
+                <template #default="scope">
+                  <el-button size="small" type="primary" @click="approveHomestay(scope.row)">通过</el-button>
+                  <el-button size="small" type="danger" @click="rejectHomestay(scope.row)">驳回</el-button>
+                  <el-button size="small" @click="viewHomestayDetail(scope.row.id)">详情</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div v-else class="empty-state">
+            <el-empty description="暂无待审核民宿" />
+          </div>
+        </el-card>
       </el-main>
     </el-container>
     
@@ -134,6 +174,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { experienceAPI } from '@/api/experience'
+import { homestayAPI } from '@/api/homestay'
 import { getImageUrl } from '@/utils'
 import { ElMessage } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
@@ -144,6 +185,8 @@ const userStore = useUserStore()
 // 数据
 const pendingExperiences = ref([])
 const pendingExperiencesCount = ref(0)
+const pendingHomestays = ref([])
+const pendingHomestaysCount = ref(0)
 const totalExperiencesCount = ref(0)
 const totalHomestaysCount = ref(0)
 const totalUsersCount = ref(0)
@@ -153,16 +196,24 @@ const rejectDialogVisible = ref(false)
 const rejectForm = ref({
   reason: ''
 })
-const currentExperience = ref(null)
+const currentItem = ref(null)
+const currentType = ref('experience') // 'experience' 或 'homestay'
 
 // 加载数据
 const loadData = async () => {
   try {
     // 加载待审核体验项目
-    const pendingResult = await experienceAPI.getPending()
-    if (Array.isArray(pendingResult)) {
-      pendingExperiences.value = pendingResult
-      pendingExperiencesCount.value = pendingResult.length
+    const pendingExperienceResult = await experienceAPI.getPending()
+    if (Array.isArray(pendingExperienceResult)) {
+      pendingExperiences.value = pendingExperienceResult
+      pendingExperiencesCount.value = pendingExperienceResult.length
+    }
+    
+    // 加载待审核民宿
+    const pendingHomestayResult = await homestayAPI.getPending()
+    if (Array.isArray(pendingHomestayResult)) {
+      pendingHomestays.value = pendingHomestayResult
+      pendingHomestaysCount.value = pendingHomestayResult.length
     }
     
     // 这里可以添加其他统计数据的加载
@@ -190,9 +241,30 @@ const approveExperience = async (experience) => {
   }
 }
 
+// 批准民宿
+const approveHomestay = async (homestay) => {
+  try {
+    await homestayAPI.review(homestay.id, 1, '')
+    ElMessage.success('审核通过')
+    loadData()
+  } catch (error) {
+    console.error('审核失败:', error)
+    ElMessage.error('审核失败')
+  }
+}
+
 // 驳回体验项目
 const rejectExperience = (experience) => {
-  currentExperience.value = experience
+  currentItem.value = experience
+  currentType.value = 'experience'
+  rejectForm.value.reason = ''
+  rejectDialogVisible.value = true
+}
+
+// 驳回民宿
+const rejectHomestay = (homestay) => {
+  currentItem.value = homestay
+  currentType.value = 'homestay'
   rejectForm.value.reason = ''
   rejectDialogVisible.value = true
 }
@@ -205,7 +277,11 @@ const confirmReject = async () => {
   }
   
   try {
-    await experienceAPI.review(currentExperience.value.id, 3, rejectForm.value.reason)
+    if (currentType.value === 'experience') {
+      await experienceAPI.review(currentItem.value.id, 3, rejectForm.value.reason)
+    } else if (currentType.value === 'homestay') {
+      await homestayAPI.review(currentItem.value.id, 3, rejectForm.value.reason)
+    }
     ElMessage.success('已驳回')
     rejectDialogVisible.value = false
     loadData()
@@ -217,8 +293,14 @@ const confirmReject = async () => {
 
 // 查看体验项目详情
 const viewExperienceDetail = (id) => {
-  // 这里可以跳转到体验项目详情页面
-  console.log('查看体验项目详情:', id)
+  // 跳转到体验项目详情页面
+  router.push(`/feature/experience/${id}`)
+}
+
+// 查看民宿详情
+const viewHomestayDetail = (id) => {
+  // 跳转到民宿详情页面
+  router.push(`/homestay/${id}`)
 }
 
 // 导航方法
@@ -305,10 +387,12 @@ onMounted(() => {
   display: flex;
   gap: 20px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .stat-card {
   flex: 1;
+  min-width: 150px;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;

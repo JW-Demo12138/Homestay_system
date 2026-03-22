@@ -44,12 +44,24 @@
             </el-form-item>
             
             <el-form-item label="地址（必填）" prop="address">
-              <el-input
-                v-model="form.address"
-                placeholder="请输入详细地址，如：北京市朝阳区建国路"
-                maxlength="200"
-                show-word-limit
-              />
+              <div class="address-input-container">
+                <el-input
+                  v-model="form.address"
+                  placeholder="请输入详细地址，如：北京市朝阳区建国路"
+                  maxlength="200"
+                  show-word-limit
+                />
+                <el-button type="primary" @click="getCurrentLocation" style="margin-top: 10px;">
+                  获取当前位置
+                </el-button>
+              </div>
+              <!-- 地图容器 -->
+              <div v-if="showMap" class="map-container">
+                <div id="locationMap" style="width: 100%; height: 400px;"></div>
+                <div class="map-tip">
+                  可拖动地图上的标记来调整位置
+                </div>
+              </div>
             </el-form-item>
             
             <el-form-item label="城市" prop="city">
@@ -163,7 +175,8 @@
               </div>
             </template>
             
-            <el-form-item label="图片上传" prop="images">              <el-upload
+            <el-form-item label="图片上传" prop="images">
+              <el-upload
                 class="image-uploader"
                 :action="uploadUrl"
                 :headers="uploadHeaders"
@@ -184,8 +197,16 @@
               <div v-if="uploadedImages.length > 0" class="uploaded-images">
                 <h4>已上传图片</h4>
                 <div class="image-list">
-                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">                  <img :src="getImageUrl(image, true)" alt="民宿图片" />
-                    <div class="image-actions">                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
+                  <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">
+                    <img :src="getImageUrl(image, true)" alt="民宿图片" />
+                    <div class="image-actions">
+                      <el-button 
+                        :type="form.coverImage === image ? 'primary' : 'default'" 
+                        size="small" 
+                        @click="form.coverImage = image"
+                      >
+                        {{ form.coverImage === image ? '已设为封面' : '设为封面' }}
+                      </el-button>
                       <el-button size="small" type="danger" @click="removeImage(index)">删除</el-button>
                     </div>
                   </div>
@@ -195,10 +216,10 @@
             
             <el-form-item label="状态" prop="status">
               <el-radio-group v-model="form.status">
-                <el-radio :label="1">
+                <el-radio :label="2">
                   <div class="status-option">
                     <span class="status-title">上架</span>
-                    <span class="status-desc">立即在平台展示，可被预订</span>
+                    <span class="status-desc">提交后等待平台审核，审核通过后自动上架</span>
                   </div>
                 </el-radio>
                 <el-radio :label="0">
@@ -207,12 +228,7 @@
                     <span class="status-desc">仅房东可见，不对外展示</span>
                   </div>
                 </el-radio>
-                <el-radio :label="2">
-                  <div class="status-option">
-                    <span class="status-title">待审核</span>
-                    <span class="status-desc">提交后等待平台审核，审核通过后自动上架</span>
-                  </div>
-                </el-radio>
+
               </el-radio-group>
             </el-form-item>
             
@@ -271,8 +287,16 @@ const form = reactive({
   images: [],
   coverImage: '',
   description: '',
-  status: 1
+  status: 2,
+  longitude: '',
+  latitude: ''
 })
+
+// 地图相关
+const showMap = ref(true)
+let map = null
+let marker = null
+let geocoder = null
 
 // 房型选项
 const roomTypeOptions = ['大床房', '双床房', '家庭房', '套房', '别墅', '公寓']
@@ -624,206 +648,577 @@ const handleLogout = async () => {
   await userStore.logout()
   router.push('/')
 }
+
+// 获取当前位置
+const getCurrentLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { longitude, latitude } = position.coords
+        form.longitude = longitude
+        form.latitude = latitude
+        
+        // 确保高德地图 API 加载完成
+        if (typeof AMap === 'undefined') {
+          ElMessage.error('地图API加载失败')
+          return
+        }
+        
+        // 动态加载 Geocoder 插件
+        AMap.plugin('AMap.Geocoder', function() {
+          geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+          })
+          
+          geocoder.getAddress([longitude, latitude], function(status, result) {
+            console.log('Geocoder result:', status, result)
+            if (status === 'complete' && result.info === 'OK') {
+              const address = result.regeocode.formattedAddress
+              form.address = address
+              form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+              console.log('获取位置成功:', address, longitude, latitude)
+              initMap(longitude, latitude)
+              showMap.value = true
+              ElMessage.success('位置获取成功')
+            } else {
+              console.error('Geocoder failed:', status, result)
+              // 处理不同的错误情况
+              if (status === 'error' && result.info === 'INVALID_USER_SCODE') {
+                ElMessage.error('API key 配置错误，请检查高德地图 API key')
+              } else {
+                ElMessage.error('获取地址失败，请手动输入')
+              }
+              // 即使获取地址失败，也设置经纬度
+              initMap(longitude, latitude)
+              showMap.value = true
+              // 手动设置一个默认地址，避免表单验证失败
+              if (!form.address) {
+                form.address = `经度: ${longitude.toFixed(6)}, 纬度: ${latitude.toFixed(6)}`
+              }
+            }
+          })
+        })
+      },
+      (error) => {
+        console.error('获取位置失败:', error)
+        ElMessage.error('获取位置失败，请检查定位权限')
+      }
+    )
+  } else {
+    ElMessage.error('浏览器不支持地理定位')
+  }
+}
+
+// 初始化地图
+const initMap = (lng, lat) => {
+  // 确保高德地图 API 加载完成
+  if (typeof AMap === 'undefined') {
+    ElMessage.error('地图API加载失败')
+    return
+  }
+  
+  if (!map) {
+    // 动态加载 Map 组件
+    AMap.plugin(['AMap.Map', 'AMap.Marker'], function() {
+      map = new AMap.Map('locationMap', {
+        zoom: 15,
+        center: [lng, lat]
+      })
+      
+      // 添加标记
+      marker = new AMap.Marker({
+        position: [lng, lat],
+        draggable: true,
+        cursor: 'move'
+      })
+      
+      map.add(marker)
+      
+      // 监听标记拖动结束事件
+      marker.on('dragend', function(e) {
+        const position = e.lnglat
+        form.longitude = position.getLng()
+        form.latitude = position.getLat()
+        
+        // 逆地理编码获取新地址
+        AMap.plugin('AMap.Geocoder', function() {
+          geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+          })
+          
+          geocoder.getAddress([position.getLng(), position.getLat()], function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+              const address = result.regeocode.formattedAddress
+              form.address = address
+              form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+            }
+          })
+        })
+      })
+    })
+  } else {
+    // 更新地图中心和标记位置
+    map.setCenter([lng, lat])
+    map.setZoom(15)
+    marker.setPosition([lng, lat])
+  }
+}
+
+// 组件挂载时初始化地图
+onMounted(() => {
+  // 初始化默认地图
+  initDefaultMap()
+})
+
+// 初始化默认地图
+const initDefaultMap = () => {
+  // 确保高德地图 API 加载完成
+  if (typeof AMap === 'undefined') {
+    // 如果 API 未加载，延迟初始化
+    setTimeout(initDefaultMap, 1000)
+    return
+  }
+  
+  // 默认位置：北京市
+  const defaultLng = 116.404
+  const defaultLat = 39.915
+  
+  // 初始化地图
+  AMap.plugin(['AMap.Map', 'AMap.Marker'], function() {
+    map = new AMap.Map('locationMap', {
+      zoom: 10,
+      center: [defaultLng, defaultLat]
+    })
+    
+    // 添加标记
+    marker = new AMap.Marker({
+      position: [defaultLng, defaultLat],
+      draggable: true,
+      cursor: 'move'
+    })
+    
+    map.add(marker)
+    
+    // 监听标记拖动结束事件
+    marker.on('dragend', function(e) {
+      const position = e.lnglat
+      form.longitude = position.getLng()
+      form.latitude = position.getLat()
+      
+      // 逆地理编码获取新地址
+      AMap.plugin('AMap.Geocoder', function() {
+        geocoder = new AMap.Geocoder({
+          radius: 1000,
+          extensions: "all"
+        })
+        
+        geocoder.getAddress([position.getLng(), position.getLat()], function(status, result) {
+          if (status === 'complete' && result.info === 'OK') {
+            const address = result.regeocode.formattedAddress
+            form.address = address
+            form.city = result.regeocode.addressComponent.city || result.regeocode.addressComponent.province
+          }
+        })
+      })
+    })
+  })
+}
 </script>
 
-<style scoped>
-.header {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 0;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-  padding: 0 20px;
-}
-
-.logo {
-  cursor: pointer;
-}
-
-.logo h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #667eea;
-}
-
-.nav {
-  display: flex;
-  gap: 20px;
-}
-
-.nav .el-link {
-  font-size: 16px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-}
-
-.form-card {
-  margin-bottom: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-}
-
-.card-tip {
-  font-size: 14px;
-  color: #999;
-}
-
-.card-tip {
-  font-size: 14px;
-  color: #999;
-}
-
-.input-suggestion {
+<style scoped> 
+ /* ========== 保持原有样式不变 ========== */ 
+ .header { 
+   background: white; 
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+   padding: 0; 
+ } 
+ 
+ .header-content { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+   height: 60px; 
+   padding: 0 20px; 
+ } 
+ 
+ .logo { 
+   cursor: pointer; 
+ } 
+ 
+ .logo h1 { 
+   margin: 0; 
+   font-size: 24px; 
+   color: #667eea; 
+ } 
+ 
+ .nav { 
+   display: flex; 
+   gap: 20px; 
+ } 
+ 
+ .nav .el-link { 
+   font-size: 16px; 
+ } 
+ 
+ .page-header { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+   margin-bottom: 30px; 
+ } 
+ 
+ .page-header h2 { 
+   margin: 0; 
+   font-size: 28px; 
+   font-weight: bold; 
+   color: #333; 
+ } 
+ 
+ .card-header { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+ } 
+ 
+ .card-header h3 { 
+   margin: 0; 
+   font-size: 18px; 
+   font-weight: bold; 
+   color: #333; 
+ } 
+ 
+ .card-tip { 
+   font-size: 14px; 
+   color: #999; 
+ } 
+ 
+ .upload-tip { 
+   font-size: 12px; 
+   color: #999; 
+ } 
+ 
+ .tip { 
+   font-size: 12px; 
+   color: #999; 
+   margin-left: 10px; 
+ } 
+ 
+ /* 整体布局优化 */ 
+ .el-main { 
+   max-width: 1200px; 
+   margin: 0 auto; 
+   padding: 40px 20px; 
+ } 
+ 
+ .form-card { 
+   margin-bottom: 40px; 
+   border-radius: 12px; 
+   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1); 
+   transition: all 0.3s ease; 
+   padding: 30px; 
+ } 
+ 
+ .form-card:hover { 
+   box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.15); 
+ } 
+ 
+ /* 表单元素优化 */ 
+ .el-form-item { 
+   margin-bottom: 24px; 
+ } 
+ 
+ .el-form-item__label { 
+   font-size: 16px; 
+   font-weight: 500; 
+   color: #333; 
+ } 
+ 
+ .el-input, 
+ .el-select, 
+ .el-input-number { 
+   width: 100%; 
+   max-width: 600px; 
+   transition: all 0.3s ease; 
+ } 
+ 
+ .el-input:focus-within, 
+ .el-select:focus-within, 
+ .el-input-number:focus-within { 
+   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2); 
+ } 
+ 
+ .el-textarea { 
+   width: 100%; 
+   max-width: 800px; 
+   resize: vertical; 
+   min-height: 120px; 
+ } 
+ 
+ /* 优化按钮样式 */ 
+ .el-button { 
+   transition: all 0.3s ease; 
+   padding: 10px 24px; 
+   font-size: 14px; 
+ } 
+ 
+ .el-button:hover { 
+   transform: translateY(-2px); 
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+ } 
+ 
+ /* 优化步骤指示器 */ 
+ .el-steps { 
+   margin-bottom: 40px; 
+   padding: 0 20px; 
+ } 
+ 
+ .el-step__title { 
+   font-size: 16px; 
+   font-weight: 500; 
+ } 
+ 
+ .el-step__head { 
+   transition: all 0.3s ease; 
+   width: 40px; 
+   height: 40px; 
+   line-height: 40px; 
+ } 
+ 
+ .el-step__head:hover { 
+   transform: scale(1.1); 
+ } 
+ 
+ .input-suggestion {
   font-size: 12px;
   color: #999;
   margin-top: 5px;
 }
 
-.facility-tags {
-  margin-bottom: 10px;
+/* 地址输入和地图优化 */
+.address-input-container {
+  position: relative;
 }
 
-.image-uploader {
-  margin-bottom: 20px;
-}
-
-.uploaded-images h4 {
-  margin: 20px 0 10px 0;
-  font-size: 16px;
-  color: #333;
-}
-
-.image-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.image-item {
-  width: 120px;
-  text-align: center;
-}
-
-.image-item img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-.image-actions {
-  font-size: 12px;
-}
-
-.status-option {
-  display: flex;
-  flex-direction: column;
-}
-
-.status-title {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.status-desc {
-  font-size: 12px;
-  color: #999;
-}
-
-.upload-tip {
-  font-size: 12px;
-  color: #999;
-}
-
-.tip {
-  font-size: 12px;
-  color: #999;
-  margin-left: 10px;
-}
-
-/* 优化整体UI */
-.form-card {
-  margin-bottom: 30px;
+.map-container {
+  margin-top: 24px;
+  border: 1px solid #dcdfe6;
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+  margin: 24px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.form-card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+#locationMap {
+  height: 500px !important;
 }
 
-/* 优化按钮样式 */
-.el-button {
-  transition: all 0.3s ease;
+.map-tip {
+  padding: 12px;
+  background-color: #f5f7fa;
+  font-size: 14px;
+  color: #606266;
+  text-align: center;
+  border-top: 1px solid #dcdfe6;
 }
 
-.el-button:hover {
-  transform: translateY(-1px);
-}
-
-/* 优化输入框样式 */
-.el-input {
-  transition: all 0.3s ease;
-}
-
-.el-input:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-}
-
-/* 优化步骤指示器 */
-.el-steps {
-  margin-bottom: 30px;
-}
-
-.el-step__head {
-  transition: all 0.3s ease;
-}
-
-.el-step__head:hover {
-  transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-  .form-card {
-    margin: 0 -20px 20px;
-    border-radius: 0;
-  }
-  
-  .address-suggestions {
-    left: -10px;
-    right: -10px;
-  }
-}
-</style>
+ /* ========== 修复1：图片上传区域布局 ========== */ 
+ .image-uploader { 
+   margin-bottom: 30px; 
+   width: 100%; 
+ } 
+ 
+ /* 修复上传组件与图片列表的排列 */ 
+ .image-uploader .el-upload { 
+   display: inline-block; 
+   vertical-align: top; 
+ } 
+ 
+ /* 已上传图片区域标题 */ 
+ .uploaded-images h4 { 
+   margin: 30px 0 15px 0; 
+   font-size: 18px; 
+   color: #333; 
+   font-weight: 500; 
+ } 
+ 
+ /* 修复图片列表布局 - 关键修复 */ 
+ .image-list { 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 20px; 
+   align-items: flex-start; 
+ } 
+ 
+ /* 修复单张图片卡片样式 */ 
+ .image-item { 
+   width: 140px; 
+   text-align: center; 
+   border: 1px solid #e4e7ed; 
+   border-radius: 8px; 
+   padding: 12px; 
+   transition: all 0.3s ease; 
+   background: white; 
+   /* 关键：防止被其他样式影响 */ 
+   box-sizing: border-box; 
+   position: relative; 
+   display: flex; 
+   flex-direction: column; 
+   align-items: center; 
+ } 
+ 
+ .image-item:hover { 
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+   transform: translateY(-2px); 
+ } 
+ 
+ .image-item img { 
+   width: 100%; 
+   height: 120px; 
+   object-fit: cover; 
+   border-radius: 6px; 
+   margin-bottom: 12px; 
+   display: block; /* 防止图片底部空隙 */ 
+ } 
+ 
+ /* 修复图片操作按钮区域 */ 
+ .image-actions { 
+   font-size: 12px; 
+   display: flex; 
+   flex-direction: column; 
+   gap: 8px; 
+   width: 100%; 
+ } 
+ 
+ /* 操作按钮样式优化 */ 
+ .image-actions .el-button { 
+   width: 100%; 
+   padding: 6px 12px; 
+   font-size: 12px; 
+   margin: 0; 
+ } 
+ 
+ /* 删除按钮特殊样式 */ 
+ .image-actions .el-button--danger { 
+   margin-top: 4px; 
+ } 
+ 
+ /* ========== 修复2：状态选项区域布局 ========== */ 
+ /* 修复radio group布局 */ 
+ .el-radio-group {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px;
+   width: 100%;
+   margin-top: 30px;
+ } 
+ 
+ /* 关键修复：确保每个radio选项独占空间且不重叠 */ 
+ .status-option { 
+   display: flex; 
+   flex-direction: column; 
+   padding: 16px; 
+   border: 2px solid #e4e7ed; 
+   border-radius: 8px; 
+   transition: all 0.3s ease; 
+   min-width: 200px; 
+   flex: 1; 
+   max-width: 280px; 
+   cursor: pointer; 
+   /* 关键：防止内容溢出 */ 
+   overflow: hidden; 
+   position: relative; 
+   background: white; 
+ } 
+ 
+ /* 修复radio按钮本身的定位 */ 
+ .status-option .el-radio { 
+   margin: 0; 
+   height: auto; 
+   display: flex; 
+   align-items: flex-start; 
+   white-space: normal; 
+   line-height: 1.4; 
+ } 
+ 
+ /* 选中状态样式 */ 
+ .status-option.is-checked { 
+   border-color: #667eea; 
+   background-color: #f5f7ff; 
+ } 
+ 
+ .status-option:hover { 
+   border-color: #667eea; 
+   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1); 
+ } 
+ 
+ /* 修复标题和描述文字 */ 
+ .status-title { 
+   font-weight: bold; 
+   margin-bottom: 8px; 
+   font-size: 16px; 
+   color: #303133; 
+   display: block; 
+ } 
+ 
+ .status-desc { 
+   font-size: 14px; 
+   color: #606266; 
+   line-height: 1.5; 
+   display: block; 
+ } 
+ 
+ /* 设施标签优化 */ 
+ .facility-tags { 
+   margin-bottom: 16px; 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 12px; 
+ } 
+ 
+ .facility-tags .el-tag { 
+   padding: 6px 12px; 
+   font-size: 14px; 
+   border-radius: 16px; 
+   background-color: #f0f2f5; 
+   border: 1px solid #e4e7ed; 
+ } 
+ 
+ /* 步骤按钮优化 */ 
+ .el-form-item:last-child { 
+   margin-top: 40px; 
+   display: flex; 
+   justify-content: flex-end; 
+   gap: 16px; 
+   padding-top: 20px; 
+   border-top: 1px solid #f0f2f5; 
+ } 
+ 
+ /* 响应式调整 */ 
+ @media (min-width: 1024px) { 
+   .el-main { 
+     padding: 60px 40px; 
+   } 
+   
+   .form-card { 
+     padding: 40px; 
+   } 
+   
+   .el-form-item { 
+     margin-bottom: 30px; 
+   } 
+   
+   .el-steps { 
+     margin-bottom: 50px; 
+   } 
+   
+   /* 桌面端状态选项横向排列更好 */ 
+   .status-option { 
+     flex: 0 0 calc(33.333% - 14px); 
+     max-width: none; 
+   } 
+ } 
+ </style>

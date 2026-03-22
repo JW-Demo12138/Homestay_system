@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.homestay.entity.Homestay;
+import com.homestay.entity.Notification;
 import com.homestay.entity.User;
 import com.homestay.mapper.HomestayMapper;
 import com.homestay.mapper.UserMapper;
 import com.homestay.service.HomestayService;
+import com.homestay.service.NotificationService;
 import com.homestay.utils.Result;
 import com.homestay.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class HomestayServiceImpl implements HomestayService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * 获取民宿列表
@@ -134,9 +139,8 @@ public class HomestayServiceImpl implements HomestayService {
         homestay.setOwnerId(currentUserId);
         System.out.println("设置民宿的房东ID为: " + currentUserId);
         
-        if (homestay.getStatus() == null) {
-            homestay.setStatus(1);
-        }
+        // 所有新创建的民宿都设置为待审核状态
+        homestay.setStatus(2);
         
         // 新增初始化
         homestay.setViewCount(0);
@@ -177,8 +181,13 @@ public class HomestayServiceImpl implements HomestayService {
             return Result.error("无权更新此民宿");
         }
         
+        // 如果民宿当前不是待审核状态，修改后设置为待审核状态
+        if (homestay.getStatus() != 2) {
+            homestay.setStatus(2);
+        }
+        
         if (homestayMapper.updateById(homestay) > 0) {
-            return Result.success("更新民宿成功", homestay);
+            return Result.success("更新民宿成功，等待管理员审核", homestay);
         }
         return Result.error("更新民宿失败");
     }
@@ -340,6 +349,22 @@ public class HomestayServiceImpl implements HomestayService {
             homestay.setRejectReason(status == 3 ? remark : null);
             
             if (homestayMapper.updateById(homestay) > 0) {
+                // 创建通知给房东
+                Notification notification = new Notification();
+                notification.setUserId(homestay.getOwnerId());
+                notification.setType("homestay_review");
+                notification.setReferenceId(homestay.getId());
+                
+                if (status == 1) {
+                    notification.setTitle("民宿审核通过");
+                    notification.setMessage("您的民宿" + homestay.getName() + "已审核通过，可以正常上架。");
+                } else if (status == 3) {
+                    notification.setTitle("民宿审核驳回");
+                    notification.setMessage("您的民宿" + homestay.getName() + "审核未通过，原因：" + remark);
+                }
+                
+                notificationService.create(notification);
+                
                 return Result.success("审核操作成功");
             }
             return Result.error("审核操作失败");

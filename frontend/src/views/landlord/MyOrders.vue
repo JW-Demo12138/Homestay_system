@@ -74,19 +74,34 @@
           
           <el-table v-loading="loading" :data="orders" style="width: 100%">
             <el-table-column prop="id" label="订单编号" width="120" />
-            <el-table-column label="民宿信息" min-width="300">
+            <el-table-column label="订单类型" width="120">
+              <template #default="scope">
+                <el-tag :type="scope.row.type === 'EXPERIENCE' ? 'info' : 'primary'">
+                  {{ scope.row.type === 'EXPERIENCE' ? '体验项目' : '民宿' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="项目信息" min-width="300">
               <template #default="scope">
                 <div class="homestay-info">
                   <img :src="getImageUrl(scope.row.homestayImage)" class="homestay-image" />
                   <div class="homestay-details">
-                    <h4>{{ scope.row.homestayName }}</h4>
+                    <h4>{{ scope.row.type === 'EXPERIENCE' ? scope.row.experienceName : scope.row.homestayName }}</h4>
                     <p>{{ scope.row.homestayAddress }}</p>
                   </div>
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="checkInDate" label="入住日期" width="120" />
-            <el-table-column prop="checkOutDate" label="退房日期" width="120" />
+            <el-table-column label="日期" width="120">
+              <template #default="scope">
+                {{ scope.row.type === 'EXPERIENCE' ? scope.row.bookingDate : scope.row.checkInDate }}
+              </template>
+            </el-table-column>
+            <el-table-column label="时间" width="120">
+              <template #default="scope">
+                {{ scope.row.type === 'EXPERIENCE' ? scope.row.timeSlot : scope.row.checkOutDate }}
+              </template>
+            </el-table-column>
             <el-table-column prop="price" label="价格" width="100">
               <template #default="scope">
                 ¥{{ scope.row.price }}
@@ -164,13 +179,13 @@
           </el-descriptions>
         </div>
         
-        <!-- 民宿信息 -->
+        <!-- 项目信息 -->
         <div class="detail-section">
-          <h3>民宿信息</h3>
+          <h3>{{ currentOrder.type === 'EXPERIENCE' ? '体验项目信息' : '民宿信息' }}</h3>
           <div class="homestay-detail-info">
             <img :src="getImageUrl(currentOrder.homestayImage)" class="homestay-detail-image" />
             <div class="homestay-detail-details">
-              <h4>{{ currentOrder.homestayName }}</h4>
+              <h4>{{ currentOrder.type === 'EXPERIENCE' ? currentOrder.experienceName : currentOrder.homestayName }}</h4>
               <p>{{ currentOrder.homestayAddress }}</p>
             </div>
           </div>
@@ -180,8 +195,8 @@
         <div class="detail-section">
           <h3>预订信息</h3>
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="入住日期">{{ currentOrder.checkInDate }}</el-descriptions-item>
-            <el-descriptions-item label="退房日期">{{ currentOrder.checkOutDate }}</el-descriptions-item>
+            <el-descriptions-item label="日期">{{ currentOrder.type === 'EXPERIENCE' ? currentOrder.bookingDate : currentOrder.checkInDate }}</el-descriptions-item>
+            <el-descriptions-item label="时间">{{ currentOrder.type === 'EXPERIENCE' ? currentOrder.timeSlot : currentOrder.checkOutDate }}</el-descriptions-item>
             <el-descriptions-item label="预订人数">{{ currentOrder.guestCount || '未知' }}</el-descriptions-item>
           </el-descriptions>
         </div>

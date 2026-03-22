@@ -87,7 +87,7 @@
           <el-row :gutter="20" v-else>
             <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="homestay in homestays" :key="homestay.id">
               <el-card class="homestay-card" @click="goToDetail(homestay.id)" shadow="hover">
-                <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0])" :alt="homestay.name" />
+                <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0], true)" :alt="homestay.name" />
                 <div class="homestay-info">
                   <h3>{{ homestay.name }}</h3>
                   <p class="address">{{ homestay.address }}</p>

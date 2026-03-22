@@ -13,6 +13,9 @@
             <el-link @click="goToUser">个人中心</el-link>
             <el-link @click="handleLogout">退出</el-link>
           </div>
+          <div class="notification">
+            <NotificationBell />
+          </div>
         </div>
       </el-header>
       
@@ -50,6 +53,16 @@
                 </el-tag>
               </template>
             </el-table-column>
+            <el-table-column label="驳回原因" min-width="200">
+              <template #default="scope">
+                <div v-if="scope.row.status === -1 && scope.row.rejectReason" class="reject-reason">
+                  {{ scope.row.rejectReason }}
+                </div>
+                <div v-else class="no-reject-reason">
+                  - 
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column prop="createTime" label="创建时间" width="180"></el-table-column>
             <el-table-column label="操作" width="200">
               <template #default="scope">
@@ -80,6 +93,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { experienceAPI } from '@/api/experience'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -113,6 +127,8 @@ const getStatusType = (status) => {
       return 'warning'
     case 2:
       return 'info'
+    case -1:
+      return 'danger'
     default:
       return ''
   }
@@ -127,6 +143,8 @@ const getStatusText = (status) => {
       return '下架'
     case 2:
       return '待审核'
+    case -1:
+      return '已驳回'
     default:
       return '未知'
   }
@@ -219,6 +237,10 @@ const handleLogout = async () => {
   padding: 0 20px;
 }
 
+.notification {
+  margin-left: 20px;
+}
+
 .logo {
   cursor: pointer;
 }
@@ -305,5 +327,18 @@ const handleLogout = async () => {
 
 .el-button:hover {
   transform: translateY(-1px);
+}
+
+/* 驳回原因样式 */
+.reject-reason {
+  color: #f56c6c;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.no-reject-reason {
+  color: #999;
+  font-size: 14px;
 }
 </style>

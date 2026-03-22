@@ -67,5 +67,20 @@ export const homestayAPI = {
       method: 'post',
       data
     })
+  },
+  
+  getPending() {
+    return request({
+      url: '/api/homestay/pending',
+      method: 'get'
+    })
+  },
+  
+  review(id, status, remark) {
+    return request({
+      url: '/api/homestay/review',
+      method: 'post',
+      data: { id, status, remark }
+    })
   }
 }

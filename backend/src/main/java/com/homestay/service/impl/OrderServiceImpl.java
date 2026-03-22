@@ -48,6 +48,31 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Result createOrder(Order order) {
         order.setStatus("PENDING");
+        
+        // 设置默认值，避免数据库字段为空
+        if (order.getCheckInDate() == null) {
+            order.setCheckInDate(new java.util.Date());
+        }
+        if (order.getCheckOutDate() == null) {
+            order.setCheckOutDate(new java.util.Date());
+        }
+        if (order.getOrderType() == null) {
+            // 根据是否有homestayId或experienceId判断订单类型
+            if (order.getHomestayId() != null) {
+                order.setOrderType("HOMESTAY");
+            } else if (order.getExperienceId() != null) {
+                order.setOrderType("EXPERIENCE");
+            } else {
+                order.setOrderType("HOMESTAY");
+            }
+        }
+        if (order.getCreateTime() == null) {
+            order.setCreateTime(new java.util.Date());
+        }
+        if (order.getUpdateTime() == null) {
+            order.setUpdateTime(new java.util.Date());
+        }
+        
         if (orderMapper.insert(order) > 0) {
             return Result.success("创建订单成功", order);
         }
@@ -329,6 +354,30 @@ public class OrderServiceImpl implements OrderService {
             
             // 创建订单，状态为待支付
             order.setStatus("PENDING");
+            
+            // 设置默认值，避免数据库字段为空
+            if (order.getCheckInDate() == null) {
+                order.setCheckInDate(now);
+            }
+            if (order.getCheckOutDate() == null) {
+                order.setCheckOutDate(now);
+            }
+            if (order.getOrderType() == null) {
+                // 根据是否有homestayId或experienceId判断订单类型
+                if (order.getHomestayId() != null) {
+                    order.setOrderType("HOMESTAY");
+                } else if (order.getExperienceId() != null) {
+                    order.setOrderType("EXPERIENCE");
+                } else {
+                    order.setOrderType("HOMESTAY");
+                }
+            }
+            if (order.getCreateTime() == null) {
+                order.setCreateTime(now);
+            }
+            if (order.getUpdateTime() == null) {
+                order.setUpdateTime(now);
+            }
             
             if (orderMapper.insert(order) > 0) {
                 return Result.success("库存锁定成功，订单创建成功", order);

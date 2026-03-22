@@ -216,7 +216,13 @@
                   <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">
                     <img :src="getImageUrl(image, true)" alt="民宿图片" />
                     <div class="image-actions">
-                      <el-checkbox v-model="form.coverImage" :label="image">设为封面</el-checkbox>
+                      <el-button 
+                        :type="form.coverImage === image ? 'primary' : 'default'" 
+                        size="small" 
+                        @click="form.coverImage = image"
+                      >
+                        {{ form.coverImage === image ? '已设为封面' : '设为封面' }}
+                      </el-button>
                       <el-button size="small" type="danger" @click="removeImage(index)">删除</el-button>
                     </div>
                   </div>
@@ -226,10 +232,10 @@
             
             <el-form-item label="状态" prop="status">
               <el-radio-group v-model="form.status">
-                <el-radio :label="1">
+                <el-radio :label="2">
                   <div class="status-option">
                     <span class="status-title">上架</span>
-                    <span class="status-desc">立即在平台展示，可被预订</span>
+                    <span class="status-desc">提交后等待平台审核，审核通过后自动上架</span>
                   </div>
                 </el-radio>
                 <el-radio :label="0">
@@ -238,25 +244,11 @@
                     <span class="status-desc">仅房东可见，不对外展示</span>
                   </div>
                 </el-radio>
-                <el-radio :label="2">
-                  <div class="status-option">
-                    <span class="status-title">待审核</span>
-                    <span class="status-desc">提交后等待平台审核，审核通过后自动上架</span>
-                  </div>
-                </el-radio>
+
               </el-radio-group>
             </el-form-item>
             
-            <el-form-item>
-              <el-button type="primary" @click="goToCreateExperience" style="margin-left: 10px;">
-                <el-icon><Star /></el-icon>
-                创建体验项目
-              </el-button>
-              <el-button @click="goToMyExperiences" style="margin-left: 10px;">
-                <el-icon><Star /></el-icon>
-                管理体验项目
-              </el-button>
-            </el-form-item>
+
             
             <el-form-item>
               <el-button @click="prevStep">上一步</el-button>
@@ -393,7 +385,7 @@ const form = reactive({
   images: [],
   coverImage: '',
   description: '',
-  status: 1,
+  status: 2,
   longitude: '',
   latitude: ''
 })
@@ -1015,239 +1007,170 @@ const finishCreation = () => {
 }
 </script>
 
-<style scoped>
-.header {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 0;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-  padding: 0 20px;
-}
-
-.logo {
-  cursor: pointer;
-}
-
-.logo h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #667eea;
-}
-
-.nav {
-  display: flex;
-  gap: 20px;
-}
-
-.nav .el-link {
-  font-size: 16px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-}
-
-.form-card {
-  margin-bottom: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-}
-
-.card-tip {
-  font-size: 14px;
-  color: #999;
-}
-
-.card-tip {
-  font-size: 14px;
-  color: #999;
-}
-
-.input-suggestion {
-  font-size: 12px;
-  color: #999;
-  margin-top: 5px;
-}
-
-.facility-tags {
-  margin-bottom: 10px;
-}
-
-.image-uploader {
-  margin-bottom: 20px;
-}
-
-.uploaded-images h4 {
-  margin: 20px 0 10px 0;
-  font-size: 16px;
-  color: #333;
-}
-
-.image-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.image-item {
-  width: 120px;
-  text-align: center;
-}
-
-.image-item img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-.image-actions {
-  font-size: 12px;
-}
-
-.status-option {
-  display: flex;
-  flex-direction: column;
-}
-
-.status-title {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.status-desc {
-  font-size: 12px;
-  color: #999;
-}
-
-.upload-tip {
-  font-size: 12px;
-  color: #999;
-}
-
-.tip {
-  font-size: 12px;
-  color: #999;
-  margin-left: 10px;
-}
-
-/* 优化整体UI */
-/* 整体布局优化 */
-.el-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.form-card {
-  margin-bottom: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  padding: 30px;
-}
-
-.form-card:hover {
-  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.15);
-}
-
-/* 表单元素优化 */
-.el-form-item {
-  margin-bottom: 24px;
-}
-
-.el-form-item__label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
-.el-input,
-.el-select,
-.el-input-number {
-  width: 100%;
-  max-width: 600px;
-  transition: all 0.3s ease;
-}
-
-.el-input:focus-within,
-.el-select:focus-within,
-.el-input-number:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-}
-
-.el-textarea {
-  width: 100%;
-  max-width: 800px;
-  resize: vertical;
-  min-height: 120px;
-}
-
-/* 优化按钮样式 */
-.el-button {
-  transition: all 0.3s ease;
-  padding: 10px 24px;
-  font-size: 14px;
-}
-
-.el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* 优化步骤指示器 */
-.el-steps {
-  margin-bottom: 40px;
-  padding: 0 20px;
-}
-
-.el-step__title {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.el-step__head {
-  transition: all 0.3s ease;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-}
-
-.el-step__head:hover {
-  transform: scale(1.1);
-}
-
-/* 地址输入和地图优化 */
+<style scoped> 
+ /* ========== 保持原有样式不变 ========== */ 
+ .header { 
+   background: white; 
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+   padding: 0; 
+ } 
+ 
+ .header-content { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+   height: 60px; 
+   padding: 0 20px; 
+ } 
+ 
+ .logo { 
+   cursor: pointer; 
+ } 
+ 
+ .logo h1 { 
+   margin: 0; 
+   font-size: 24px; 
+   color: #667eea; 
+ } 
+ 
+ .nav { 
+   display: flex; 
+   gap: 20px; 
+ } 
+ 
+ .nav .el-link { 
+   font-size: 16px; 
+ } 
+ 
+ .page-header { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+   margin-bottom: 30px; 
+ } 
+ 
+ .page-header h2 { 
+   margin: 0; 
+   font-size: 28px; 
+   font-weight: bold; 
+   color: #333; 
+ } 
+ 
+ .card-header { 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+ } 
+ 
+ .card-header h3 { 
+   margin: 0; 
+   font-size: 18px; 
+   font-weight: bold; 
+   color: #333; 
+ } 
+ 
+ .card-tip { 
+   font-size: 14px; 
+   color: #999; 
+ } 
+ 
+ .upload-tip { 
+   font-size: 12px; 
+   color: #999; 
+ } 
+ 
+ .tip { 
+   font-size: 12px; 
+   color: #999; 
+   margin-left: 10px; 
+ } 
+ 
+ /* 整体布局优化 */ 
+ .el-main { 
+   max-width: 1200px; 
+   margin: 0 auto; 
+   padding: 40px 20px; 
+ } 
+ 
+ .form-card { 
+   margin-bottom: 40px; 
+   border-radius: 12px; 
+   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1); 
+   transition: all 0.3s ease; 
+   padding: 30px; 
+ } 
+ 
+ .form-card:hover { 
+   box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.15); 
+ } 
+ 
+ /* 表单元素优化 */ 
+ .el-form-item { 
+   margin-bottom: 24px; 
+ } 
+ 
+ .el-form-item__label { 
+   font-size: 16px; 
+   font-weight: 500; 
+   color: #333; 
+ } 
+ 
+ .el-input, 
+ .el-select, 
+ .el-input-number { 
+   width: 100%; 
+   max-width: 600px; 
+   transition: all 0.3s ease; 
+ } 
+ 
+ .el-input:focus-within, 
+ .el-select:focus-within, 
+ .el-input-number:focus-within { 
+   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2); 
+ } 
+ 
+ .el-textarea { 
+   width: 100%; 
+   max-width: 800px; 
+   resize: vertical; 
+   min-height: 120px; 
+ } 
+ 
+ /* 优化按钮样式 */ 
+ .el-button { 
+   transition: all 0.3s ease; 
+   padding: 10px 24px; 
+   font-size: 14px; 
+ } 
+ 
+ .el-button:hover { 
+   transform: translateY(-2px); 
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+ } 
+ 
+ /* 优化步骤指示器 */ 
+ .el-steps { 
+   margin-bottom: 40px; 
+   padding: 0 20px; 
+ } 
+ 
+ .el-step__title { 
+   font-size: 16px; 
+   font-weight: 500; 
+ } 
+ 
+ .el-step__head { 
+   transition: all 0.3s ease; 
+   width: 40px; 
+   height: 40px; 
+   line-height: 40px; 
+ } 
+ 
+ .el-step__head:hover { 
+   transform: scale(1.1); 
+ } 
+ 
+ /* 地址输入和地图优化 */
 .address-input-container {
   position: relative;
 }
@@ -1304,127 +1227,206 @@ const finishCreation = () => {
   border-top: 1px solid #dcdfe6;
 }
 
-/* 图片上传优化 */
-.image-uploader {
-  margin-bottom: 30px;
-}
-
-.uploaded-images h4 {
-  margin: 30px 0 15px 0;
-  font-size: 18px;
-  color: #333;
-  font-weight: 500;
-}
-
-.image-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.image-item {
-  width: 140px;
-  text-align: center;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  padding: 12px;
-  transition: all 0.3s ease;
-}
-
-.image-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.image-item img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 12px;
-}
-
-.image-actions {
+.input-suggestion {
   font-size: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  color: #999;
+  margin-top: 5px;
 }
 
-/* 设施标签优化 */
-.facility-tags {
-  margin-bottom: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.facility-tags .el-tag {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 16px;
-  background-color: #f0f2f5;
-  border: 1px solid #e4e7ed;
-}
-
-/* 步骤按钮优化 */
-.el-form-item:last-child {
-  margin-top: 40px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f2f5;
-}
-
-/* 状态选项优化 */
-.status-option {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  margin-right: 24px;
-  transition: all 0.3s ease;
-  min-width: 220px;
-  flex-shrink: 0;
-}
-
-.status-option:hover {
-  border-color: #667eea;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-}
-
-.status-title {
-  font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 16px;
-}
-
-.status-desc {
-  font-size: 14px;
-  color: #606266;
-  line-height: 1.4;
-}
-
-/* 响应式调整 - 仅针对桌面端 */
-@media (min-width: 1024px) {
-  .el-main {
-    padding: 60px 40px;
-  }
-  
-  .form-card {
-    padding: 40px;
-  }
-  
-  .el-form-item {
-    margin-bottom: 30px;
-  }
-  
-  .el-steps {
-    margin-bottom: 50px;
-  }
-}
-
-/* 移除移动端样式，因为不需要考虑移动端 */
-</style>
+ /* ========== 修复1：图片上传区域布局 ========== */ 
+ .image-uploader { 
+   margin-bottom: 30px; 
+   width: 100%; 
+ } 
+ 
+ /* 修复上传组件与图片列表的排列 */ 
+ .image-uploader .el-upload { 
+   display: inline-block; 
+   vertical-align: top; 
+ } 
+ 
+ /* 已上传图片区域标题 */ 
+ .uploaded-images h4 { 
+   margin: 30px 0 15px 0; 
+   font-size: 18px; 
+   color: #333; 
+   font-weight: 500; 
+ } 
+ 
+ /* 修复图片列表布局 - 关键修复 */ 
+ .image-list { 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 20px; 
+   align-items: flex-start; 
+ } 
+ 
+ /* 修复单张图片卡片样式 */ 
+ .image-item { 
+   width: 140px; 
+   text-align: center; 
+   border: 1px solid #e4e7ed; 
+   border-radius: 8px; 
+   padding: 12px; 
+   transition: all 0.3s ease; 
+   background: white; 
+   /* 关键：防止被其他样式影响 */ 
+   box-sizing: border-box; 
+   position: relative; 
+   display: flex; 
+   flex-direction: column; 
+   align-items: center; 
+ } 
+ 
+ .image-item:hover { 
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+   transform: translateY(-2px); 
+ } 
+ 
+ .image-item img { 
+   width: 100%; 
+   height: 120px; 
+   object-fit: cover; 
+   border-radius: 6px; 
+   margin-bottom: 12px; 
+   display: block; /* 防止图片底部空隙 */ 
+ } 
+ 
+ /* 修复图片操作按钮区域 */ 
+ .image-actions { 
+   font-size: 12px; 
+   display: flex; 
+   flex-direction: column; 
+   gap: 8px; 
+   width: 100%; 
+ } 
+ 
+ /* 操作按钮样式优化 */ 
+ .image-actions .el-button { 
+   width: 100%; 
+   padding: 6px 12px; 
+   font-size: 12px; 
+   margin: 0; 
+ } 
+ 
+ /* 删除按钮特殊样式 */ 
+ .image-actions .el-button--danger { 
+   margin-top: 4px; 
+ } 
+ 
+ /* ========== 修复2：状态选项区域布局 ========== */ 
+ /* 修复radio group布局 */ 
+ .el-radio-group {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px;
+   width: 100%;
+   margin-top: 30px;
+ } 
+ 
+ /* 关键修复：确保每个radio选项独占空间且不重叠 */ 
+ .status-option { 
+   display: flex; 
+   flex-direction: column; 
+   padding: 16px; 
+   border: 2px solid #e4e7ed; 
+   border-radius: 8px; 
+   transition: all 0.3s ease; 
+   min-width: 200px; 
+   flex: 1; 
+   max-width: 280px; 
+   cursor: pointer; 
+   /* 关键：防止内容溢出 */ 
+   overflow: hidden; 
+   position: relative; 
+   background: white; 
+ } 
+ 
+ /* 修复radio按钮本身的定位 */ 
+ .status-option .el-radio { 
+   margin: 0; 
+   height: auto; 
+   display: flex; 
+   align-items: flex-start; 
+   white-space: normal; 
+   line-height: 1.4; 
+ } 
+ 
+ /* 选中状态样式 */ 
+ .status-option.is-checked { 
+   border-color: #667eea; 
+   background-color: #f5f7ff; 
+ } 
+ 
+ .status-option:hover { 
+   border-color: #667eea; 
+   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1); 
+ } 
+ 
+ /* 修复标题和描述文字 */ 
+ .status-title { 
+   font-weight: bold; 
+   margin-bottom: 8px; 
+   font-size: 16px; 
+   color: #303133; 
+   display: block; 
+ } 
+ 
+ .status-desc { 
+   font-size: 14px; 
+   color: #606266; 
+   line-height: 1.5; 
+   display: block; 
+ } 
+ 
+ /* 设施标签优化 */ 
+ .facility-tags { 
+   margin-bottom: 16px; 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 12px; 
+ } 
+ 
+ .facility-tags .el-tag { 
+   padding: 6px 12px; 
+   font-size: 14px; 
+   border-radius: 16px; 
+   background-color: #f0f2f5; 
+   border: 1px solid #e4e7ed; 
+ } 
+ 
+ /* 步骤按钮优化 */ 
+ .el-form-item:last-child { 
+   margin-top: 40px; 
+   display: flex; 
+   justify-content: flex-end; 
+   gap: 16px; 
+   padding-top: 20px; 
+   border-top: 1px solid #f0f2f5; 
+ } 
+ 
+ /* 响应式调整 */ 
+ @media (min-width: 1024px) { 
+   .el-main { 
+     padding: 60px 40px; 
+   } 
+   
+   .form-card { 
+     padding: 40px; 
+   } 
+   
+   .el-form-item { 
+     margin-bottom: 30px; 
+   } 
+   
+   .el-steps { 
+     margin-bottom: 50px; 
+   } 
+   
+   /* 桌面端状态选项横向排列更好 */ 
+   .status-option { 
+     flex: 0 0 calc(33.333% - 14px); 
+     max-width: none; 
+   } 
+ } 
+ </style>

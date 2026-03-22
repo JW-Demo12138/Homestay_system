@@ -69,7 +69,7 @@
           <div class="image-gallery">
             <el-carousel :interval="5000" type="card" height="500px" indicator-position="outside">
               <el-carousel-item v-for="(image, index) in homestayImages" :key="index">
-                <img :src="getImageUrl(image)" :alt="homestay.name" class="gallery-image" />
+                <img :src="getImageUrl(image, true)" :alt="homestay.name" class="gallery-image" />
               </el-carousel-item>
             </el-carousel>
           </div>
@@ -190,6 +190,21 @@
             <div class="location-info">
               <p class="address">{{ homestay.address }}</p>
             </div>
+            
+            <!-- 地图容器 -->
+            <div v-if="homestay && homestay.longitude && homestay.latitude" class="map-container">
+              <div class="map-controls">
+                <el-button-group>
+                  <el-button :type="mapType === 'standard' ? 'primary' : 'default'" @click="switchMapType('standard')">普通地图</el-button>
+                  <el-button :type="mapType === 'satellite' ? 'primary' : 'default'" @click="switchMapType('satellite')">卫星地图</el-button>
+                </el-button-group>
+              </div>
+              
+              <div ref="mapContainer" class="map" id="map"></div>
+            </div>
+            <div v-else class="no-map">
+              <el-empty description="暂无位置信息" />
+            </div>
           </div>
           
           <!-- 房东信息 -->
@@ -207,10 +222,6 @@
                 <p class="landlord-phone">{{ homestay.landlordPhone }}</p>
                 <p class="landlord-since">成为房东 {{ landlordSince }} 年</p>
               </div>
-              <el-button type="default" plain>
-                <el-icon><ChatLineRound /></el-icon>
-                联系房东
-              </el-button>
             </div>
           </div>
           
@@ -317,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { homestayAPI } from '@/api/homestay'
@@ -326,7 +337,7 @@ import { ratingAPI } from '@/api/rating'
 import { experienceAPI } from '@/api/experience'
 import { getImageUrl, formatPrice } from '@/utils'
 import { ElMessage } from 'element-plus'
-import { ArrowDown, Position, House, Document, User, Star, Calendar, Clock, Check, ChatLineRound, Picture } from '@element-plus/icons-vue'
+import { ArrowDown, Position, House, Document, User, Star, Calendar, Clock, Check, Picture } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -370,6 +381,11 @@ const experienceBookingForm = reactive({
 
 // 图片相关
 const currentImageIndex = ref(0)
+
+// 地图相关
+const mapContainer = ref(null)
+const map = ref(null)
+const mapType = ref('standard') // standard 或 satellite
 
 // 计算属性：将逗号分隔的图片URL转换为数组
 const homestayImages = computed(() => {
@@ -543,23 +559,124 @@ const handleExperienceBook = async () => {
   }
   
   try {
-    // 这里可以调用体验项目预订的API
-    console.log('预订体验项目:', {
-      experienceId: selectedExperience.value.id,
+    // 创建体验项目订单
+    const result = await orderAPI.create({
       userId: userStore.userId,
-      date: formatDate(experienceBookingForm.date),
-      timeSlot: experienceBookingForm.timeSlot
+      experienceId: selectedExperience.value.id,
+      homestayId: homestay.value.id,
+      bookingDate: formatDate(experienceBookingForm.date),
+      timeSlot: experienceBookingForm.timeSlot,
+      price: selectedExperience.value.price,
+      guestName: userStore.userInfo?.guestName || userStore.username,
+      guestPhone: userStore.userInfo?.phone || '',
+      guestEmail: userStore.userInfo?.email || '',
+      type: 'EXPERIENCE' // 标记为体验项目订单
     })
+    
+    console.log('预约体验项目成功:', result)
     ElMessage.success('预约成功')
     experienceBookingVisible.value = false
+    
+    // 跳转到订单详情页面进行支付
+    if (result.data && result.data.id) {
+      router.push(`/user/orders`)
+    }
   } catch (error) {
     console.error('预约失败:', error)
     ElMessage.error('预约失败')
   }
 }
 
+// 初始化地图
+const initMap = () => {
+  if (!homestay.value || !homestay.value.longitude || !homestay.value.latitude || !mapContainer.value) return
+  
+  // 检查是否已加载高德地图API
+  if (typeof AMap === 'undefined') {
+    ElMessage.error('地图API加载失败')
+    return
+  } else {
+    console.log('开始创建地图...')
+    createMap()
+  }
+}
+
+// 创建地图
+const createMap = () => {
+  if (!homestay.value || !homestay.value.longitude || !homestay.value.latitude || !mapContainer.value) return
+  
+  console.log('地图容器:', mapContainer.value)
+  console.log('民宿坐标:', homestay.value.longitude, homestay.value.latitude)
+  
+  // 销毁已存在的地图实例
+  if (map.value) {
+    map.value.destroy()
+    map.value = null
+  }
+  
+  // 加载所需插件
+  AMap.plugin(['AMap.Marker', 'AMap.ToolBar', 'AMap.Scale', 'AMap.MapType', 'AMap.TileLayer.Satellite'], function() {
+    try {
+      // 创建地图实例 - 使用ref引用的DOM元素
+      map.value = new AMap.Map(mapContainer.value, {
+        center: [homestay.value.longitude, homestay.value.latitude],
+        zoom: 15
+      })
+      
+      console.log('地图创建成功:', map.value)
+      
+      // 添加标记
+      new AMap.Marker({
+        position: [homestay.value.longitude, homestay.value.latitude],
+        title: homestay.value.name,
+        map: map.value
+      })
+      
+      // 添加控件
+      map.value.addControl(new AMap.ToolBar())
+      map.value.addControl(new AMap.Scale())
+      
+      // 切换到指定地图类型
+      if (mapType.value === 'satellite') {
+        // 切换到卫星地图
+        const satelliteLayer = new AMap.TileLayer.Satellite()
+        satelliteLayer.setMap(map.value)
+      } else {
+        // 切换到标准地图
+        // 标准地图是默认类型，不需要额外设置
+      }
+    } catch (error) {
+      console.error('地图创建失败:', error)
+      ElMessage.error('地图创建失败，请刷新页面重试')
+    }
+  })
+}
+
+// 切换地图类型
+const switchMapType = (type) => {
+  mapType.value = type
+  // 销毁当前地图实例并重新创建
+  if (map.value) {
+    map.value.destroy()
+    map.value = null
+  }
+  // 重新初始化地图
+  initMap()
+}
+
 onMounted(() => {
   loadHomestayDetail()
+  
+  // 轮询等待高德API加载（防止script标签异步加载未完成）
+  const checkAMap = setInterval(() => {
+    if (typeof AMap !== 'undefined' && mapContainer.value) {
+      clearInterval(checkAMap)
+      initMap()
+    }
+  }, 500)
+  
+  // 10秒超时保护
+  setTimeout(() => clearInterval(checkAMap), 10000)
 })
 </script>
 
@@ -961,6 +1078,95 @@ onMounted(() => {
 .no-experiences {
   padding: 40px 0;
   text-align: center;
+}
+
+/* 地图相关样式 */
+.map-container {
+  margin-top: 30px;
+}
+
+.map-controls {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.map {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.no-map {
+  padding: 60px 0;
+  text-align: center;
+}
+
+/* 路径规划面板样式 */
+.route-planning-panel {
+  background-color: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.route-planning-panel .el-form {
+  margin-bottom: 20px;
+}
+
+.route-result {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+}
+
+.route-result h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.route-result p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+/* 地址输入和建议样式 */
+.address-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.suggestion-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.suggestion-item:hover {
+  background-color: #f5f7fa;
 }
 
 /* User Dropdown */ 

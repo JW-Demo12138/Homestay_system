@@ -13,6 +13,7 @@
           <a href="#" @click="goToMyOrders">我的订单</a>
         </nav>
         <div class="user-actions">
+          <NotificationBell />
           <el-dropdown>
             <div class="user-dropdown">
               <el-avatar :size="32" :src="getImageUrl(userStore.userInfo?.avatar)">
@@ -167,6 +168,7 @@ import { orderAPI } from '@/api/order'
 import { experienceAPI } from '@/api/experience'
 import { getImageUrl, formatPrice } from '@/utils'
 import { ArrowDown, House, Document, Money, Timer, Star } from '@element-plus/icons-vue'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -335,6 +337,7 @@ body {
 .user-actions {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .user-dropdown {

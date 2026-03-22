@@ -14,6 +14,7 @@
         </nav>
         <div class="user-actions">
           <template v-if="userStore.isLoggedIn">
+            <NotificationBell />
             <el-dropdown>
               <div class="user-dropdown">
                 <el-avatar :size="32" :src="getImageUrl(userStore.userInfo?.avatar)">
@@ -145,7 +146,7 @@
         <div class="homestay-grid" v-loading="loading">
           <div class="modern-card" v-for="homestay in recommendHomestays" :key="homestay.id" @click="goToDetail(homestay.id)">
             <div class="card-image">
-              <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0])" :alt="homestay.name" />
+              <img :src="getImageUrl((homestay.imageUrl || '').split(',')[0], true)" :alt="homestay.name" />
               <button class="favorite-btn">
                 <svg viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -246,6 +247,7 @@ import { homestayAPI } from '@/api/homestay'
 import { cityAPI } from '@/api/city'
 import { getImageUrl, formatPrice } from '@/utils'
 import { ArrowDown } from '@element-plus/icons-vue'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -682,46 +684,56 @@ onMounted(() => {
 
 /* 网格布局 - 桌面端 4 列 */
 .homestay-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px 24px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
   margin-bottom: 48px;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
+  padding: 0 20px;
 }
 
 /* 大屏 3 列 */
 @media (min-width: 1600px) {
   .homestay-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px 24px;
+    gap: 30px;
     max-width: 1400px;
+  }
+  .modern-card {
+    width: 440px;
   }
 }
 
 /* 小屏 3 列 */
 @media (max-width: 1200px) {
   .homestay-grid {
-    grid-template-columns: repeat(3, 1fr);
     max-width: 900px;
+  }
+  .modern-card {
+    width: 280px;
   }
 }
 
 /* 平板 2 列 */
 @media (max-width: 768px) {
   .homestay-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px 16px;
+    gap: 20px;
     max-width: 600px;
+  }
+  .modern-card {
+    width: 280px;
   }
 }
 
 /* 手机 1 列 */
 @media (max-width: 480px) {
   .homestay-grid {
-    grid-template-columns: 1fr;
     max-width: 400px;
+  }
+  .modern-card {
+    width: 100%;
   }
 }
 
@@ -730,7 +742,8 @@ onMounted(() => {
   position: relative;
   cursor: pointer;
   /* 无背景色，无大阴影，极简 */
-  width: 100%;
+  width: 380px;
+  min-width: 0;
 }
 
 /* 图片容器 - 3:2 比例（Airbnb 标准） */

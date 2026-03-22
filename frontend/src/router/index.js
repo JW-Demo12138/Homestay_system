@@ -92,12 +92,8 @@ const routes = [
     component: () => import('@/views/user/MyOrders.vue'),
     meta: { requiresAuth: true, title: '我的订单' }
   },
-  {
-    path: '/feature/topic',
-    name: 'FeatureTopic',
-    component: () => import('@/views/feature/FeatureTopic.vue'),
-    meta: { title: '特色专题' }
-  },
+  { path: '/feature/topic', name: 'FeatureTopic', component: () => import('@/views/feature/FeatureTopic.vue'), meta: { title: '特色专题' } },
+  { path: '/feature/experience/:id', name: 'FeatureExperienceDetail', component: () => import('@/views/feature/ExperienceDetail.vue'), meta: { title: '体验项目详情' } },
   {
     path: '/admin',
     name: 'AdminDashboard',

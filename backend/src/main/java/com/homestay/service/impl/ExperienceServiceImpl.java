@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.homestay.entity.Experience;
+import com.homestay.entity.Notification;
 import com.homestay.mapper.ExperienceMapper;
 import com.homestay.service.ExperienceService;
+import com.homestay.service.NotificationService;
 import com.homestay.utils.Result;
 import com.homestay.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class ExperienceServiceImpl implements ExperienceService {
 
     @Autowired
     private ExperienceMapper experienceMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * 获取当前登录用户ID
@@ -217,6 +222,22 @@ public class ExperienceServiceImpl implements ExperienceService {
             experience.setRejectReason(status == 3 ? remark : null);
             
             if (experienceMapper.updateById(experience) > 0) {
+                // 创建通知给房东
+                Notification notification = new Notification();
+                notification.setUserId(experience.getOwnerId());
+                notification.setType("experience_review");
+                notification.setReferenceId(experience.getId());
+                
+                if (status == 1) {
+                    notification.setTitle("体验项目审核通过");
+                    notification.setMessage("您的体验项目" + experience.getName() + "已审核通过，可以正常上架。");
+                } else if (status == 3) {
+                    notification.setTitle("体验项目审核驳回");
+                    notification.setMessage("您的体验项目" + experience.getName() + "审核未通过，原因：" + remark);
+                }
+                
+                notificationService.create(notification);
+                
                 return Result.success("审核操作成功");
             }
             return Result.error("审核操作失败");
