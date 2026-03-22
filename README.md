@@ -1,17 +1,4 @@
 
-toolName: view_files
-status: success
-
-filePath: e:\Homestay system\frontend\README.md
-现在让我查看一下后端的README文件，以便给您一个更全面的项目描述。
-
-
-toolName: view_files
-status: success
-
-filePath: e:\Homestay system\backend\README.md
-根据我对项目代码的分析，这是一个完整的民宿预订系统，类似于爱彼迎（Airbnb）的乡村民宿预订平台。以下是项目的详细描述：
-项目概述
 这是一个基于现代Web技术栈开发的民宿预订系统，分为前端和后端两部分，支持用户、房东和管理员三种角色。
 
 技术栈
