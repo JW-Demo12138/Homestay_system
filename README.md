@@ -1,4 +1,3 @@
-我需要先了解一下项目的整体结构和功能，然后给您一个全面的描述。让我查看一些关键文件。
 
 toolName: view_files
 status: success
