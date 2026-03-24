@@ -244,9 +244,14 @@
                   <div class="experience-time-slots">
                     可预约时段: {{ experience.availableTime }}
                   </div>
-                  <el-button type="primary" @click="openExperienceBooking(experience)">
-                    预约体验
-                  </el-button>
+                  <div class="experience-actions">
+                    <el-button type="primary" @click="openExperienceBooking(experience)" class="action-button">
+                      预约体验
+                    </el-button>
+                    <el-button type="primary" @click="viewExperienceDetail(experience.id)" class="action-button">
+                      查看详情
+                    </el-button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -585,6 +590,12 @@ const handleExperienceBook = async () => {
     console.error('预约失败:', error)
     ElMessage.error('预约失败')
   }
+}
+
+// 查看体验项目详情
+const viewExperienceDetail = (id) => {
+  // 跳转到体验项目详情页面
+  router.push(`/feature/experience/${id}`)
 }
 
 // 初始化地图
@@ -1078,6 +1089,27 @@ onMounted(() => {
 .no-experiences {
   padding: 40px 0;
   text-align: center;
+}
+
+/* 体验项目按钮样式 */
+.experience-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.action-button {
+  flex: 1;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
 /* 地图相关样式 */
