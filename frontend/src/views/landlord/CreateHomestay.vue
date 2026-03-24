@@ -219,7 +219,7 @@
                       <el-button 
                         :type="form.coverImage === image ? 'primary' : 'default'" 
                         size="small" 
-                        @click="form.coverImage = image"
+                        @click="setCoverImage(image)"
                       >
                         {{ form.coverImage === image ? '已设为封面' : '设为封面' }}
                       </el-button>
@@ -522,6 +522,13 @@ const removeImage = (index) => {
   }
 }
 
+// 设置封面图
+const setCoverImage = (image) => {
+  form.coverImage = image
+  ElMessage.success('封面设置成功')
+  console.log('设置封面:', image)
+}
+
 
 
 // 表单验证规则
@@ -659,8 +666,9 @@ const handleSubmit = async () => {
     
     // 确保图片提交 - 将图片URL数组转换为逗号分隔字符串
     form.imageUrl = uploadedImages.value.join(',')
-    if (!form.coverImage) {
+    if (!form.coverImage && uploadedImages.value.length > 0) {
       form.coverImage = uploadedImages.value[0]
+      ElMessage.info('已自动设置第一张图片为封面')
     }
     
     console.log('准备提交的民宿数据:', {

@@ -104,26 +104,36 @@
             <h3>快捷操作</h3>
           </div>
           <div class="card-body">
-            <div class="action-buttons">
-              <el-button type="primary" @click="goToCreateHomestay" class="primary-button">
-                <el-icon><Plus /></el-icon>
-                发布民宿
+            <div class="action-grid">
+              <el-button @click="goToCreateHomestay" class="action-card primary-action">
+                <div class="action-icon create-icon">
+                  <el-icon><Plus /></el-icon>
+                </div>
+                <div class="action-text">发布民宿</div>
               </el-button>
-              <el-button @click="goToCreateExperience" class="secondary-button">
-                <el-icon><Star /></el-icon>
-                创建体验项目
+              <el-button @click="goToCreateExperience" class="action-card experience-action">
+                <div class="action-icon experience-icon">
+                  <el-icon><Star /></el-icon>
+                </div>
+                <div class="action-text">创建体验项目</div>
               </el-button>
-              <el-button @click="goToMyHomestays" class="secondary-button">
-                <el-icon><House /></el-icon>
-                我的民宿
+              <el-button @click="goToMyHomestays" class="action-card homestay-action">
+                <div class="action-icon homestay-icon">
+                  <el-icon><House /></el-icon>
+                </div>
+                <div class="action-text">我的民宿</div>
               </el-button>
-              <el-button @click="goToMyExperiences" class="secondary-button">
-                <el-icon><Star /></el-icon>
-                我的体验项目
+              <el-button @click="goToMyExperiences" class="action-card experience-action">
+                <div class="action-icon experience-icon">
+                  <el-icon><Star /></el-icon>
+                </div>
+                <div class="action-text">我的体验项目</div>
               </el-button>
-              <el-button @click="goToMyOrders" class="secondary-button">
-                <el-icon><Document /></el-icon>
-                我的订单
+              <el-button @click="goToMyOrders" class="action-card order-action">
+                <div class="action-icon order-icon">
+                  <el-icon><Document /></el-icon>
+                </div>
+                <div class="action-text">我的订单</div>
               </el-button>
             </div>
           </div>
@@ -487,51 +497,89 @@ body {
   padding: 24px;
 }
 
-/* 操作按钮 */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
+/* 操作按钮网格 */
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.primary-button {
-  background: linear-gradient(135deg, #ff385c, #ff7a8f);
-  border: none;
-  border-radius: 12px;
-  padding: 20px;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
+.action-card {
+  background: white;
+  border: 2px solid var(--primary-color);
+  border-radius: 16px;
+  padding: 24px;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  height: 120px;
+  color: var(--primary-color);
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(255, 56, 92, 0.2);
+  border-color: var(--primary-color);
+}
+
+.primary-action {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #ff385c, #ff7a8f);
+  border-color: #ff385c;
+  color: white;
+}
+
+.primary-action:hover {
+  box-shadow: 0 8px 24px rgba(255, 56, 92, 0.3);
+  border-color: #ff385c;
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  font-size: 20px;
+  margin-bottom: 8px;
+  background: rgba(255, 56, 92, 0.1);
+  color: var(--primary-color);
 }
 
-.primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 56, 92, 0.3);
-}
-
-.secondary-button {
-  background: linear-gradient(135deg, #ff385c, #ff7a8f);
-  border: none;
-  border-radius: 12px;
-  padding: 20px;
-  font-size: 18px;
-  font-weight: 700;
+.create-icon {
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
 }
 
-.secondary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 56, 92, 0.3);
+.experience-icon {
+  background: rgba(255, 56, 92, 0.1);
+  color: var(--primary-color);
+}
+
+.homestay-icon {
+  background: rgba(255, 56, 92, 0.1);
+  color: var(--primary-color);
+}
+
+.order-icon {
+  background: rgba(255, 56, 92, 0.1);
+  color: var(--primary-color);
+}
+
+.primary-action .action-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.action-text {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
 }
 
 /* 订单列表 */

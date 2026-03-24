@@ -138,20 +138,36 @@ const homestay = ref(null)
 
 // 计算属性：将逗号分隔的图片URL转换为数组
 const experienceImages = computed(() => {
-  if (!experience.value?.imageUrl || typeof experience.value.imageUrl !== 'string') return []
-  return experience.value.imageUrl.split(',').map(url => url.trim()).filter(url => url)
+  console.log('Experience imageUrl:', experience.value?.imageUrl)
+  console.log('Experience images:', experience.value?.images)
+  console.log('Type of imageUrl:', typeof experience.value?.imageUrl)
+  console.log('Type of images:', typeof experience.value?.images)
+  
+  // 优先使用images字段，因为创建时存储的是所有图片
+  let imageUrl = experience.value?.images || experience.value?.imageUrl
+  
+  if (!imageUrl || typeof imageUrl !== 'string' || imageUrl === 'true' || imageUrl === 'false') {
+    console.log('Returning empty array for experienceImages')
+    return []
+  }
+  const images = imageUrl.split(',').map(url => url.trim()).filter(url => url && url !== 'true' && url !== 'false')
+  console.log('Experience images array:', images)
+  return images
 })
 
 const loadExperienceDetail = async () => {
   loading.value = true
   try {
     const id = route.params.id
+    console.log('Loading experience detail for id:', id)
     experience.value = await experienceAPI.getDetail(id)
+    console.log('Experience detail data:', experience.value)
     
     // 加载关联的民宿信息
     if (experience.value.homestayId) {
       try {
         homestay.value = await homestayAPI.getDetail(experience.value.homestayId)
+        console.log('Homestay detail data:', homestay.value)
       } catch (error) {
         console.error('加载民宿信息失败:', error)
       }

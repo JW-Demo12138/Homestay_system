@@ -24,10 +24,12 @@ export const formatPrice = (price) => {
 }
 
 export const getImageUrl = (url, isLocal = false) => {
-  if (!url || typeof url !== 'string') return ''
+  if (!url || typeof url !== 'string' || url === 'true' || url === 'false') return ''
   if (url.startsWith('http')) return url
   // 处理可能的重复路径
   const cleanUrl = url.split(',').filter(Boolean)[0] || url
+  // 再次检查cleanUrl是否有效
+  if (!cleanUrl || cleanUrl === 'true' || cleanUrl === 'false') return ''
   // 根据是否使用本地路径返回不同的URL
   if (isLocal) {
     // 本地路径处理 - 特色体验图片实际保存在后端的uploads/avatars目录
