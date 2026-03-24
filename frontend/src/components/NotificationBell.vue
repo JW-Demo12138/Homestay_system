@@ -76,13 +76,8 @@ const getNotifications = async () => {
 }
 
 // 标记所有通知为已读
-const isLoading = ref(false)
-
 const markAllAsRead = async () => {
-  if (isLoading.value) return
-  
   try {
-    isLoading.value = true
     await notificationAPI.markAllAsRead()
     notifications.value.forEach(n => {
       n.read = true
@@ -90,9 +85,7 @@ const markAllAsRead = async () => {
     ElMessage.success('已标记所有通知为已读')
   } catch (error) {
     console.error('标记所有通知为已读失败:', error)
-    ElMessage.error('服务器暂时无法处理，请稍后再试')
-  } finally {
-    isLoading.value = false
+    ElMessage.error('操作失败')
   }
 }
 

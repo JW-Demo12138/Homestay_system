@@ -32,18 +32,15 @@ public class AuthController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody Map<String, String> loginData) {
-        // 从请求数据中获取登录标识符、密码和角色
-        String loginId = loginData.get("loginId");
+        // 从请求数据中获取用户名、手机号、密码和角色
         String username = loginData.get("username");
         String phone = loginData.get("phone");
         String password = loginData.get("password");
         String role = loginData.get("role");
         
         // 确定登录标识符
-        // 优先使用loginId，如果没有则使用username，如果没有则使用phone
-        if (loginId == null) {
-            loginId = username != null ? username : phone;
-        }
+        // 优先使用username，如果没有则使用phone
+        String loginId = username != null ? username : phone;
         
         // 调用认证服务进行登录，传递角色信息
         return authService.login(loginId, password, role);

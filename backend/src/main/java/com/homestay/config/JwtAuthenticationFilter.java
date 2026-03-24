@@ -45,30 +45,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 检查token是否有效
             if (claims == null) {
                 // token无效，返回401错误
-                try {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"code\": 401, \"message\": \"Token无效\"}");
-                    response.getWriter().flush();
-                    response.getWriter().close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"code\": 401, \"message\": \"Token无效\"}");
                 return;
             }
             
             // 检查token是否过期
             if (jwtUtils.isTokenExpired(claims)) {
                 // token过期，返回401错误
-                try {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"code\": 401, \"message\": \"Token已过期\"}");
-                    response.getWriter().flush();
-                    response.getWriter().close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"code\": 401, \"message\": \"Token已过期\"}");
                 return;
             }
             

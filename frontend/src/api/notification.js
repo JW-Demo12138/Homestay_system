@@ -21,8 +21,7 @@ export const notificationAPI = {
   markAllAsRead() {
     return request({
       url: '/api/notification/read/all',
-      method: 'put',
-      data: {}
+      method: 'put'
     })
   },
   

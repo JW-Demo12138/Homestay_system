@@ -108,7 +108,8 @@ public class JwtUtils {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            // 解析失败，返回null
+            e.printStackTrace(); // 打印出来看看具体的异常
+            System.out.println("JWT解析异常: " + e.getMessage());
             return null;
         }
     }

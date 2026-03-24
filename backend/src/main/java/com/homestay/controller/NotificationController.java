@@ -47,19 +47,12 @@ public class NotificationController {
      */
     @PutMapping("/read/all")
     public Result<?> markAllAsRead() {
-        try {
-            Long userId = SecurityUtils.getCurrentUserId();
-            if (userId == null) {
-                return Result.error("用户未登录");
-            }
-            // 无论是否有未读通知，标记操作都视为成功
-            notificationService.markAllAsRead(userId);
-            return Result.success();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("标记所有通知为已读失败: " + e.getMessage());
-            return Result.error("操作失败: " + e.getMessage());
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return Result.error("用户未登录");
         }
+        boolean result = notificationService.markAllAsRead(userId);
+        return result ? Result.success() : Result.error("操作失败");
     }
 
     /**
