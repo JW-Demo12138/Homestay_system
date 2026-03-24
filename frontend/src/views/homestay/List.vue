@@ -146,10 +146,24 @@ const searchParams = reactive({
 const loadHomestays = async () => {
   loading.value = true
   try {
+    // 构建参数，只包含非 null 的价格范围值
     const params = {
-      ...searchParams,
-      tags: currentTag.value || searchParams.tags
+      keyword: searchParams.keyword,
+      tags: currentTag.value || searchParams.tags,
+      page: searchParams.page,
+      size: searchParams.size
     }
+    
+    // 只添加有效的价格范围参数
+    if (searchParams.minPrice !== null) {
+      params.minPrice = searchParams.minPrice
+    }
+    if (searchParams.maxPrice !== null) {
+      params.maxPrice = searchParams.maxPrice
+    }
+    
+    console.log('传递给后端的参数:', params)
+    
     const result = await homestayAPI.getList(params)
     homestays.value = result.records || []
     total.value = result.total || 0
@@ -161,6 +175,19 @@ const loadHomestays = async () => {
 }
 
 const handleSearch = () => {
+  // 验证价格范围
+  if (searchParams.minPrice !== null && searchParams.maxPrice !== null) {
+    if (searchParams.minPrice > searchParams.maxPrice) {
+      // 交换值，确保最小值不大于最大值
+      [searchParams.minPrice, searchParams.maxPrice] = [searchParams.maxPrice, searchParams.minPrice]
+    }
+  } else if (searchParams.minPrice !== null) {
+    // 只输入了最小值，设置最大值为一个合理的默认值
+    searchParams.maxPrice = 99999
+  } else if (searchParams.maxPrice !== null) {
+    // 只输入了最大值，设置最小值为 0
+    searchParams.minPrice = 0
+  }
   searchParams.page = 1
   loadHomestays()
 }

@@ -9,7 +9,6 @@
         <el-dropdown-menu>
           <div class="notification-header">
             <span>通知</span>
-            <el-button v-if="unreadCount > 0" size="small" type="text" @click.stop="markAllAsRead">全部已读</el-button>
           </div>
           <el-dropdown-item v-if="notifications.length === 0" disabled>
             暂无通知
@@ -75,26 +74,7 @@ const getNotifications = async () => {
   }
 }
 
-// 标记所有通知为已读
-const isLoading = ref(false)
 
-const markAllAsRead = async () => {
-  if (isLoading.value) return
-  
-  try {
-    isLoading.value = true
-    await notificationAPI.markAllAsRead()
-    notifications.value.forEach(n => {
-      n.read = true
-    })
-    ElMessage.success('已标记所有通知为已读')
-  } catch (error) {
-    console.error('标记所有通知为已读失败:', error)
-    ElMessage.error('服务器暂时无法处理，请稍后再试')
-  } finally {
-    isLoading.value = false
-  }
-}
 
 // 处理通知点击
 const handleNotificationClick = async (notification) => {
