@@ -232,7 +232,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2024 民宿预订系统. 保留所有权利.</p>
+          <p>&copy; JW 民宿预订系统. 保留所有权利.</p>
         </div>
       </div>
     </footer>

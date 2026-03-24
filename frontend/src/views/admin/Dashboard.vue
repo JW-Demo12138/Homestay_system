@@ -300,7 +300,7 @@ const viewExperienceDetail = (id) => {
 // 查看民宿详情
 const viewHomestayDetail = (id) => {
   // 跳转到民宿详情页面
-  router.push(`/homestay/${id}`)
+  router.push(`/homestays/${id}`)
 }
 
 // 导航方法

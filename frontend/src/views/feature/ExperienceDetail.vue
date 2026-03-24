@@ -138,7 +138,7 @@ const homestay = ref(null)
 
 // 计算属性：将逗号分隔的图片URL转换为数组
 const experienceImages = computed(() => {
-  if (!experience.value?.imageUrl) return []
+  if (!experience.value?.imageUrl || typeof experience.value.imageUrl !== 'string') return []
   return experience.value.imageUrl.split(',').map(url => url.trim()).filter(url => url)
 })
 

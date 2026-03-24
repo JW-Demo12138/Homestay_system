@@ -389,7 +389,7 @@ const mapType = ref('standard') // standard 或 satellite
 
 // 计算属性：将逗号分隔的图片URL转换为数组
 const homestayImages = computed(() => {
-  if (!homestay.value?.imageUrl) return []
+  if (!homestay.value?.imageUrl || typeof homestay.value.imageUrl !== 'string') return []
   return homestay.value.imageUrl.split(',').map(url => url.trim()).filter(url => url)
 })
 

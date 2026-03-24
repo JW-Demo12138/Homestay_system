@@ -24,7 +24,7 @@ export const formatPrice = (price) => {
 }
 
 export const getImageUrl = (url, isLocal = false) => {
-  if (!url) return ''
+  if (!url || typeof url !== 'string') return ''
   if (url.startsWith('http')) return url
   // 处理可能的重复路径
   const cleanUrl = url.split(',').filter(Boolean)[0] || url
