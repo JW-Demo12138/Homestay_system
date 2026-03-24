@@ -44,12 +44,17 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
         if (userId == null) {
             return false;
         }
-        Notification notification = new Notification();
-        notification.setRead(1);
-        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userId)
-                .eq("read", 0);
-        return baseMapper.update(notification, queryWrapper) > 0;
+        try {
+            // 使用字符串形式的SQL来更新字段，手动添加反引号
+            return baseMapper.update(null, new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<Notification>()
+                    .set("`read`", 1)
+                    .eq("user_id", userId)
+                    .eq("`read`", 0)) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("标记所有通知为已读失败: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override

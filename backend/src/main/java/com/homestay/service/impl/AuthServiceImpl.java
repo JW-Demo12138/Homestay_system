@@ -59,8 +59,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 密码验证
-        // 使用BCryptPasswordEncoder验证密码是否匹配
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        // 支持明文密码和加密密码
+        if (!password.equals(user.getPassword()) && !passwordEncoder.matches(password, user.getPassword())) {
             return Result.error("密码错误");
         }
 
