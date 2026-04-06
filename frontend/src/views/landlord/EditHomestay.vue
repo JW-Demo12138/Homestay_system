@@ -160,6 +160,37 @@
               </div>
             </el-form-item>
             
+            <el-form-item label="标签" prop="tags">
+              <div class="tag-selector">
+                <el-tag
+                  v-for="tag in selectedTags"
+                  :key="tag"
+                  closable
+                  @close="removeTag(tag)"
+                  style="margin-right: 10px; margin-bottom: 10px"
+                >
+                  {{ tag }}
+                </el-tag>
+              </div>
+              <el-select
+                v-model="tempTag"
+                placeholder="选择预设标签"
+                style="width: 200px; margin-right: 10px; margin-top: 10px"
+                @change="addTag"
+              >
+                <el-option v-for="tag in tagOptions" :key="tag" :label="tag" :value="tag" />
+              </el-select>
+              <el-input
+                v-model="customTag"
+                placeholder="或输入自定义标签"
+                style="width: 200px; margin-top: 10px"
+              >
+                <template #append>
+                  <el-button @click="addCustomTag" size="small">添加</el-button>
+                </template>
+              </el-input>
+            </el-form-item>
+            
             <el-form-item>
               <el-button @click="prevStep">上一步</el-button>
               <el-button type="primary" @click="nextStep">下一步</el-button>
@@ -284,6 +315,7 @@ const form = reactive({
   price: null,
   roomType: '',
   facility: '',
+  tags: '',
   images: [],
   coverImage: '',
   description: '',
@@ -316,6 +348,12 @@ const selectedFacilities = ref([])
 const tempFacility = ref('')
 const customFacility = ref('')
 
+// 标签选项
+const tagOptions = ['山水风光', '城市中心', '海滨度假', '乡村体验', '亲子友好', '宠物友好', '情侣浪漫', '商务出行', '文化体验', '自然生态']
+const selectedTags = ref([])
+const tempTag = ref('')
+const customTag = ref('')
+
 const addFacility = () => {
   if (tempFacility.value && !selectedFacilities.value.includes(tempFacility.value)) {
     selectedFacilities.value.push(tempFacility.value)
@@ -334,6 +372,28 @@ const removeFacility = (facility) => {
   const index = selectedFacilities.value.indexOf(facility)
   if (index > -1) {
     selectedFacilities.value.splice(index, 1)
+  }
+}
+
+// 标签相关方法
+const addTag = () => {
+  if (tempTag.value && !selectedTags.value.includes(tempTag.value)) {
+    selectedTags.value.push(tempTag.value)
+    tempTag.value = ''
+  }
+}
+
+const addCustomTag = () => {
+  if (customTag.value && !selectedTags.value.includes(customTag.value)) {
+    selectedTags.value.push(customTag.value)
+    customTag.value = ''
+  }
+}
+
+const removeTag = (tag) => {
+  const index = selectedTags.value.indexOf(tag)
+  if (index > -1) {
+    selectedTags.value.splice(index, 1)
   }
 }
 
@@ -491,12 +551,15 @@ const loadHomestay = async () => {
     const data = await homestayAPI.getDetail(homestayId)
     Object.assign(form, data)
     
-    // 处理房型和设施
+    // 处理房型、设施和标签
     if (form.roomType) {
       selectedRoomTypes.value = form.roomType.split('、')
     }
     if (form.facility) {
       selectedFacilities.value = form.facility.split('、')
+    }
+    if (form.tags) {
+      selectedTags.value = form.tags.split('、')
     }
     
     // 处理图片
@@ -554,10 +617,11 @@ const prevStep = () => {
   }
 }
 
-// 监听选择的房型和设施，自动更新到表单
-watch([selectedRoomTypes, selectedFacilities], () => {
+// 监听选择的房型、设施和标签，自动更新到表单
+watch([selectedRoomTypes, selectedFacilities, selectedTags], () => {
   form.roomType = selectedRoomTypes.value.join('、')
   form.facility = selectedFacilities.value.join('、')
+  form.tags = selectedTags.value.join('、')
 }, { deep: true })
 
 // 重置表单
