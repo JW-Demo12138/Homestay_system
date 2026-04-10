@@ -1,5 +1,5 @@
 
-这是一个基于现代Web技术栈开发的民宿预订系统，分为前端和后端两部分，支持用户、房东和管理员三种角色。
+一个大学生的毕设 基于SpringBoot+vue的乡村民宿预订系统
 
 技术栈
 前端
@@ -49,24 +49,6 @@
 5. 通知与消息
 ● 订单状态变更通知
 ● 审核结果通知
-
-项目结构
-Homestay system/
-├── frontend/          # 前端项目（Vue 3）
-│   ├── src/
-│   │   ├── api/      # API接口封装
-│   │   ├── views/    # 页面组件
-│   │   ├── store/    # Pinia状态管理
-│   │   └── ...
-│
-└── backend/          # 后端项目（Spring Boot）
-    ├── src/
-    │   ├── main/java/com/homestay/
-    │   │   ├── controller/    # 控制器
-    │   │   ├── service/       # 服务层
-    │   │   ├── entity/        # 实体类
-    │   │   └── mapper/        # 数据访问层
-    │   └── ...
 
 主要特色
 1. 完整的审核流程：
