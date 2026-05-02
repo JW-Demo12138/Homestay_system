@@ -1,2 +1,0 @@
-USE homestay;
-DESCRIBE `order`;
