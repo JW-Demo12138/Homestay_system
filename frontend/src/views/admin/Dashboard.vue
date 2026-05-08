@@ -175,6 +175,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { experienceAPI } from '@/api/experience'
 import { homestayAPI } from '@/api/homestay'
+import { dashboardAPI } from '@/api/dashboard'
 import { getImageUrl } from '@/utils'
 import { ElMessage } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
@@ -216,8 +217,13 @@ const loadData = async () => {
       pendingHomestaysCount.value = pendingHomestayResult.length
     }
     
-    // 这里可以添加其他统计数据的加载
-    // 例如：总体验项目数、总民宿数、总用户数等
+    // 加载统计数据
+    const stats = await dashboardAPI.getStats()
+    if (stats) {
+      totalExperiencesCount.value = stats.totalExperiences || 0
+      totalHomestaysCount.value = stats.totalHomestays || 0
+      totalUsersCount.value = stats.totalUsers || 0
+    }
   } catch (error) {
     console.error('加载数据失败:', error)
     ElMessage.error('加载数据失败')

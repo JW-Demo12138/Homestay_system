@@ -1,9 +1,11 @@
 package com.homestay.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.homestay.entity.Experience;
 import com.homestay.entity.Homestay;
 import com.homestay.entity.Order;
 import com.homestay.entity.User;
+import com.homestay.mapper.ExperienceMapper;
 import com.homestay.mapper.HomestayMapper;
 import com.homestay.mapper.OrderMapper;
 import com.homestay.mapper.UserMapper;
@@ -27,6 +29,9 @@ public class DashboardServiceImpl implements DashboardService {
     
     @Autowired
     private OrderMapper orderMapper;
+    
+    @Autowired
+    private ExperienceMapper experienceMapper;
 
     @Override
     public Result getStats() {
@@ -34,6 +39,12 @@ public class DashboardServiceImpl implements DashboardService {
         
         QueryWrapper<Homestay> homestayQuery = new QueryWrapper<>();
         stats.put("totalHomestays", homestayMapper.selectCount(homestayQuery));
+        
+        QueryWrapper<Experience> experienceQuery = new QueryWrapper<>();
+        stats.put("totalExperiences", experienceMapper.selectCount(experienceQuery));
+        
+        QueryWrapper<User> userQuery = new QueryWrapper<>();
+        stats.put("totalUsers", userMapper.selectCount(userQuery));
         
         QueryWrapper<Order> orderQuery = new QueryWrapper<>();
         stats.put("totalOrders", orderMapper.selectCount(orderQuery));
