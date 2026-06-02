@@ -171,4 +171,30 @@ public class OrderController {
     public Result checkInventory(@RequestParam String type, @RequestParam Long itemId, @RequestParam String date) {
         return orderService.checkInventory(type, itemId, date);
     }
+
+    /**
+     * 管理员查询所有订单
+     * @param page 页码
+     * @param size 每页大小
+     * @param status 订单状态（可选）
+     * @param keyword 搜索关键词（可选）
+     * @return 订单列表
+     */
+    @GetMapping("/admin/list")
+    public Result getAdminOrders(@RequestParam(defaultValue = "1") Integer page,
+                                 @RequestParam(defaultValue = "10") Integer size,
+                                 @RequestParam(required = false) String status,
+                                 @RequestParam(required = false) String keyword) {
+        return orderService.getAdminOrders(page, size, status, keyword);
+    }
+
+    /**
+     * 管理员查看订单详情
+     * @param id 订单ID
+     * @return 订单详情
+     */
+    @GetMapping("/admin/detail/{id}")
+    public Result getAdminOrderDetail(@PathVariable Long id) {
+        return orderService.getOrderDetail(id);
+    }
 }

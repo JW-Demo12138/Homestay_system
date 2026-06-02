@@ -1,12 +1,16 @@
 package com.homestay.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.homestay.entity.Rating;
 import com.homestay.mapper.RatingMapper;
 import com.homestay.service.RatingService;
 import com.homestay.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * 评分服务实现类
@@ -85,4 +89,43 @@ public class RatingServiceImpl implements RatingService {
         return Result.success("获取平均评分成功", averageRating);
     }
 
+    @Override
+    public Result getAllRatings(Map<String, Object> params) {
+        int page = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
+        int size = params.get("size") != null ? Integer.parseInt(params.get("size").toString()) : 10;
+
+        IPage<Rating> ratingPage = new Page<>(page, size);
+        QueryWrapper<Rating> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("create_time");
+
+        // 添加搜索条件
+        if (params.get("keyword") != null) {
+            queryWrapper.like("comment", params.get("keyword"));
+        }
+
+        IPage<Rating> result = ratingMapper.selectPage(ratingPage, queryWrapper);
+        return Result.success("获取评分列表成功", result);
+    }
+
+    @Override
+    public Result deleteRating(Long ratingId) {
+        if (ratingMapper.deleteById(ratingId) > 0) {
+            return Result.success("删除评价成功");
+        }
+        return Result.error("删除评价失败");
+    }
+
+    @Override
+    public Result getAllRatings(Integer page, Integer size, String keyword) {
+        IPage<Rating> ratingPage = new Page<>(page, size);
+        QueryWrapper<Rating> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("create_time");
+
+        if (keyword != null && !keyword.isEmpty()) {
+            queryWrapper.like("comment", keyword);
+        }
+
+        IPage<Rating> result = ratingMapper.selectPage(ratingPage, queryWrapper);
+        return Result.success("获取评分列表成功", result);
+    }
 }

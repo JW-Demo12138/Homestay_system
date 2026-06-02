@@ -4,6 +4,7 @@ import com.homestay.entity.User;
 import com.homestay.service.UserService;
 import com.homestay.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -179,5 +180,20 @@ public class UserController {
     public Result updateUserStatus(@PathVariable Long id, @RequestBody Map<String, Integer> statusData) {
         Integer status = statusData.get("status");
         return userService.updateUserStatus(id, status);
+    }
+
+    /**
+     * 管理员重置用户密码
+     * <p>
+     * 管理员可以直接重置指定用户的密码，无需验证旧密码
+     * 
+     * @param id 用户ID
+     * @param passwordData 包含新密码的Map
+     * @return Result 重置结果的响应对象
+     */
+    @PostMapping("/admin/reset-password/{id}")
+    public Result resetUserPassword(@PathVariable Long id, @RequestBody Map<String, String> passwordData) {
+        String newPassword = passwordData.get("newPassword");
+        return userService.resetUserPassword(id, newPassword);
     }
 }

@@ -1,6 +1,7 @@
 package com.homestay.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
@@ -18,12 +19,16 @@ public class City {
     
     private Double longitude;
     
+    @TableField("is_hot")
     private Integer isHot;
     
+    @TableField("sort_order")
     private Integer sortOrder;
     
+    @TableField("create_time")
     private Date createTime;
     
+    @TableField("update_time")
     private Date updateTime;
 
     public Long getId() {

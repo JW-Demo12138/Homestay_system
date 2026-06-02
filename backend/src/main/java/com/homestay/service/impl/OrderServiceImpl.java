@@ -10,6 +10,8 @@ import com.homestay.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,7 +160,8 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public Result getOrderDetail(Long id) {
-        Order order = orderMapper.selectById(id);
+        // 使用自定义查询获取订单及其关联的民宿和用户信息
+        Order order = orderMapper.selectOrderByIdWithRelations(id);
         if (order == null) {
             return Result.error("订单不存在");
         }
@@ -301,37 +304,91 @@ public class OrderServiceImpl implements OrderService {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(order.getId());
         orderDTO.setHomestayId(order.getHomestayId());
-        
-        if (order.getHomestay() != null) {
-            orderDTO.setHomestayImage(order.getHomestay().getImageUrl());
-            orderDTO.setHomestayName(order.getHomestay().getName());
-            orderDTO.setHomestayAddress(order.getHomestay().getAddress());
-        } else {
-            orderDTO.setHomestayImage("/uploads/default-homestay.jpg");
-            orderDTO.setHomestayName("未知民宿");
-            orderDTO.setHomestayAddress("未知地址");
-        }
+        orderDTO.setOrderType(order.getOrderType());
+        orderDTO.setExperienceId(order.getExperienceId());
+        orderDTO.setQuantity(order.getQuantity() != null ? order.getQuantity() : 1);
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        if (order.getCheckInDate() != null) {
-            orderDTO.setCheckInDate(sdf.format(order.getCheckInDate()));
-        } else {
-            orderDTO.setCheckInDate("未知日期");
-        }
         
-        if (order.getCheckOutDate() != null) {
-            orderDTO.setCheckOutDate(sdf.format(order.getCheckOutDate()));
+        if ("EXPERIENCE".equals(order.getOrderType())) {
+            if (order.getExperience() != null) {
+                orderDTO.setExperienceName(order.getExperience().getName());
+                orderDTO.setExperienceImage(order.getExperience().getImageUrl());
+                orderDTO.setExperienceLocation(order.getExperience().getLocation());
+            } else {
+                orderDTO.setExperienceName("未知体验项目");
+                orderDTO.setExperienceImage("/uploads/default-experience.jpg");
+                orderDTO.setExperienceLocation("未知地点");
+            }
+            
+            if (order.getExperienceDate() != null) {
+                orderDTO.setExperienceDate(sdf.format(order.getExperienceDate()));
+            } else {
+                orderDTO.setExperienceDate("未知日期");
+            }
+            orderDTO.setExperienceTime(order.getExperienceTime() != null ? order.getExperienceTime() : "未知时间");
+            
+            orderDTO.setHomestayImage("/uploads/default-homestay.jpg");
+            orderDTO.setHomestayName("体验项目");
+            orderDTO.setHomestayAddress(orderDTO.getExperienceLocation());
+            orderDTO.setCheckInDate(orderDTO.getExperienceDate());
+            orderDTO.setCheckOutDate(orderDTO.getExperienceDate());
         } else {
-            orderDTO.setCheckOutDate("未知日期");
+            if (order.getHomestay() != null) {
+                orderDTO.setHomestayImage(order.getHomestay().getImageUrl());
+                orderDTO.setHomestayName(order.getHomestay().getName());
+                orderDTO.setHomestayAddress(order.getHomestay().getAddress());
+            } else {
+                orderDTO.setHomestayImage("/uploads/default-homestay.jpg");
+                orderDTO.setHomestayName("未知民宿");
+                orderDTO.setHomestayAddress("未知地址");
+            }
+            
+            if (order.getCheckInDate() != null) {
+                orderDTO.setCheckInDate(sdf.format(order.getCheckInDate()));
+            } else {
+                orderDTO.setCheckInDate("未知日期");
+            }
+            
+            if (order.getCheckOutDate() != null) {
+                orderDTO.setCheckOutDate(sdf.format(order.getCheckOutDate()));
+            } else {
+                orderDTO.setCheckOutDate("未知日期");
+            }
         }
         
         orderDTO.setGuestCount(1);
         orderDTO.setPrice(order.getPrice() != null ? order.getPrice() : 0.0);
         orderDTO.setStatus(order.getStatus());
         orderDTO.setCreateTime(order.getCreateTime());
-        orderDTO.setGuestName(order.getGuestName() != null ? order.getGuestName() : "未知");
-        orderDTO.setGuestPhone(order.getGuestPhone() != null ? order.getGuestPhone() : "未知");
-        orderDTO.setGuestEmail(order.getGuestEmail() != null ? order.getGuestEmail() : "未知");
+        
+        String guestName = "未知";
+        String guestPhone = "未知";
+        String guestEmail = "未知";
+        
+        if (order.getUser() != null && order.getUser().getUsername() != null) {
+            guestName = order.getUser().getUsername();
+            if (order.getUser().getPhone() != null) {
+                guestPhone = order.getUser().getPhone();
+            }
+            if (order.getUser().getEmail() != null) {
+                guestEmail = order.getUser().getEmail();
+            }
+        }
+        
+        if (guestName.equals("未知") && order.getGuestName() != null) {
+            guestName = order.getGuestName();
+        }
+        if (guestPhone.equals("未知") && order.getGuestPhone() != null) {
+            guestPhone = order.getGuestPhone();
+        }
+        if (guestEmail.equals("未知") && order.getGuestEmail() != null) {
+            guestEmail = order.getGuestEmail();
+        }
+        
+        orderDTO.setGuestName(guestName);
+        orderDTO.setGuestPhone(guestPhone);
+        orderDTO.setGuestEmail(guestEmail);
         
         return orderDTO;
     }
@@ -457,5 +514,23 @@ public class OrderServiceImpl implements OrderService {
             e.printStackTrace();
             return Result.error("库存检查失败：" + e.getMessage());
         }
+    }
+
+    @Override
+    public Result getAdminOrders(Integer page, Integer size, String status, String keyword) {
+        Integer start = (page - 1) * size;
+        
+        List<Order> orders = orderMapper.selectAdminOrders(status, keyword, start, size);
+        int total = orderMapper.countAdminOrders(status, keyword);
+        
+        List<OrderDTO> orderDTOs = convertToDTOs(orders);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("orders", orderDTOs);
+        response.put("total", total);
+        response.put("page", page);
+        response.put("size", size);
+        
+        return Result.success("获取订单列表成功", response);
     }
 }

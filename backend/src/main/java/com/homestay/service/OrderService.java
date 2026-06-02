@@ -138,4 +138,17 @@ public interface OrderService {
      * @return Result 检查结果的响应对象
      */
     Result checkInventory(String type, Long itemId, String date);
+
+    /**
+     * 管理员查询所有订单
+     * <p>
+     * 管理员可以查询所有订单，支持分页、状态筛选和关键词搜索
+     * 
+     * @param page 页码
+     * @param size 每页大小
+     * @param status 订单状态（可选）
+     * @param keyword 搜索关键词（可选）
+     * @return Result 包含订单列表的响应对象
+     */
+    Result getAdminOrders(Integer page, Integer size, String status, String keyword);
 }  

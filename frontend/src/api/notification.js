@@ -32,5 +32,30 @@ export const notificationAPI = {
       url: `/api/notification/delete/${id}`,
       method: 'delete'
     })
+  },
+
+  // 管理员：发送公告
+  sendAnnouncement(data) {
+    return request({
+      url: '/api/notification/admin/send',
+      method: 'post',
+      data: data
+    })
+  },
+
+  // 管理员：获取公告列表
+  getAnnouncementList() {
+    return request({
+      url: '/api/notification/admin/list',
+      method: 'get'
+    })
+  },
+
+  // 管理员：删除公告
+  deleteAnnouncement(id) {
+    return request({
+      url: `/api/notification/admin/delete/${id}`,
+      method: 'delete'
+    })
   }
 }

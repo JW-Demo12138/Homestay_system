@@ -6,7 +6,6 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import router from './router'
 import App from './App.vue'
 
-// 直接挂载应用
 const app = createApp(App)
 const pinia = createPinia()
 

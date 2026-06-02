@@ -3,11 +3,23 @@ import { authAPI } from '@/api/auth'
 import { userAPI } from '@/api/user'
 
 export const useUserStore = defineStore('user', {
-  state: () => ({
-    token: localStorage.getItem('accessToken') || '',
-    refreshToken: localStorage.getItem('refreshToken') || '',
-    userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null')
-  }),
+  state: () => {
+    // 安全地从localStorage读取userInfo
+    let userInfo = null
+    try {
+      const savedUserInfo = localStorage.getItem('userInfo')
+      userInfo = savedUserInfo ? JSON.parse(savedUserInfo) : null
+    } catch (error) {
+      console.error('解析userInfo失败:', error)
+      localStorage.removeItem('userInfo')
+    }
+    
+    return {
+      token: localStorage.getItem('accessToken') || '',
+      refreshToken: localStorage.getItem('refreshToken') || '',
+      userInfo: userInfo
+    }
+  },
   
   getters: {
     isLoggedIn: (state) => !!state.token,
@@ -62,9 +74,16 @@ export const useUserStore = defineStore('user', {
     },
     
     async getUserInfo() {
-      const userInfo = await userAPI.getUserInfo()
-      this.userInfo = userInfo
-      localStorage.setItem('userInfo', JSON.stringify(userInfo))
+      try {
+        const userInfo = await userAPI.getUserInfo()
+        if (userInfo) {
+          this.userInfo = userInfo
+          localStorage.setItem('userInfo', JSON.stringify(userInfo))
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+        throw error
+      }
     },
     
     async updateUserInfo(userInfo) {

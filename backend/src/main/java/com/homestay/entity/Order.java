@@ -49,6 +49,13 @@ public class Order {
     private Experience experience;
     
     /**
+     * 用户信息
+     * 非数据库字段，用于关联查询
+     */
+    @TableField(exist = false)
+    private User user;
+    
+    /**
      * 入住日期
      */
     @TableField("check_in_date")
@@ -411,6 +418,24 @@ public class Order {
      */
     public void setExperience(Experience experience) {
         this.experience = experience;
+    }
+    
+    /**
+     * 获取用户信息
+     * 
+     * @return User 用户信息
+     */
+    public User getUser() {
+        return user;
+    }
+    
+    /**
+     * 设置用户信息
+     * 
+     * @param user 用户信息
+     */
+    public void setUser(User user) {
+        this.user = user;
     }
     
     /**

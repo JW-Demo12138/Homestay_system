@@ -28,4 +28,9 @@ public class SecurityUtils {
         }
         return null;
     }
+
+    public static boolean isAdmin() {
+        String role = getCurrentRole();
+        return "ROLE_ADMIN".equals(role) || "ADMIN".equals(role);
+    }
 }

@@ -96,9 +96,47 @@ const routes = [
   { path: '/feature/experience/:id', name: 'FeatureExperienceDetail', component: () => import('@/views/feature/ExperienceDetail.vue'), meta: { title: '体验项目详情' } },
   {
     path: '/admin',
-    name: 'AdminDashboard',
-    component: () => import('@/views/admin/Dashboard.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'], title: '管理员中心' }
+    name: 'Admin',
+    component: () => import('@/views/admin/Layout.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    children: [
+      {
+        path: '',
+        name: 'AdminDashboard',
+        component: () => import('@/views/admin/Dashboard.vue'),
+        meta: { title: '数据概览' }
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('@/views/admin/UserManagement.vue'),
+        meta: { title: '用户管理' }
+      },
+      {
+        path: 'orders',
+        name: 'AdminOrders',
+        component: () => import('@/views/admin/OrderManagement.vue'),
+        meta: { title: '订单管理' }
+      },
+      {
+        path: 'reviews',
+        name: 'AdminReviews',
+        component: () => import('@/views/admin/ReviewManagement.vue'),
+        meta: { title: '评价管理' }
+      },
+      {
+        path: 'announcement',
+        name: 'AdminAnnouncement',
+        component: () => import('@/views/admin/AnnouncementManagement.vue'),
+        meta: { title: '公告管理' }
+      },
+      {
+        path: 'config',
+        name: 'AdminConfig',
+        component: () => import('@/views/admin/ConfigManagement.vue'),
+        meta: { title: '系统配置' }
+      }
+    ]
   }
 ]
 
@@ -107,8 +145,17 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
+  
+  // 如果用户已登录但没有完整的用户信息，尝试刷新
+  if (userStore.isLoggedIn && !userStore.userInfo) {
+    try {
+      await userStore.getUserInfo()
+    } catch (error) {
+      console.error('路由守卫中刷新用户信息失败:', error)
+    }
+  }
   
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login')

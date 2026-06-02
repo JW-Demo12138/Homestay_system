@@ -42,4 +42,27 @@ public interface NotificationService extends IService<Notification> {
      * @return 是否成功
      */
     boolean create(Notification notification);
+
+    /**
+     * 发送公告
+     * @param title 公告标题
+     * @param message 公告内容
+     * @param announcementType 公告类型：ALL-全体，LANDLORD-房东，TOURIST-游客
+     * @param createdBy 创建人ID
+     * @return 是否成功
+     */
+    boolean sendAnnouncement(String title, String message, String announcementType, Long createdBy);
+
+    /**
+     * 获取公告列表（管理员）
+     * @return 公告列表
+     */
+    List<Notification> getAnnouncementList();
+
+    /**
+     * 删除公告
+     * @param id 公告ID
+     * @return 是否成功
+     */
+    boolean deleteAnnouncement(Long id);
 }

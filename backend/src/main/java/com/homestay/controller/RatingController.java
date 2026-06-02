@@ -4,7 +4,10 @@ import com.homestay.entity.Rating;
 import com.homestay.service.RatingService;
 import com.homestay.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 评分控制器
@@ -51,6 +54,30 @@ public class RatingController {
     public Result getHomestayAverageRating(@PathVariable("id") Long homestayId) {
         // 调用评分服务获取民宿平均评分
         return ratingService.getHomestayAverageRating(homestayId);
+    }
+
+    /**
+     * 管理员查询所有评价
+     * @param page 页码
+     * @param size 每页大小
+     * @param keyword 搜索关键词（可选）
+     * @return 评价列表
+     */
+    @GetMapping("/admin/list")
+    public Result getAllRatings(@RequestParam(defaultValue = "1") Integer page,
+                                @RequestParam(defaultValue = "10") Integer size,
+                                @RequestParam(required = false) String keyword) {
+        return ratingService.getAllRatings(page, size, keyword);
+    }
+
+    /**
+     * 管理员删除评价
+     * @param id 评价ID
+     * @return 删除结果
+     */
+    @DeleteMapping("/admin/delete/{id}")
+    public Result deleteRating(@PathVariable Long id) {
+        return ratingService.deleteRating(id);
     }
 
 }

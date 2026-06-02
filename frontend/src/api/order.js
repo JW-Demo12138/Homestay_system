@@ -60,5 +60,20 @@ export const orderAPI = {
       method: 'post',
       data
     })
+  },
+  
+  adminList(params) {
+    return request({
+      url: '/api/order/admin/list',
+      method: 'get',
+      params
+    })
+  },
+  
+  adminDetail(id) {
+    return request({
+      url: `/api/order/admin/detail/${id}`,
+      method: 'get'
+    })
   }
 }

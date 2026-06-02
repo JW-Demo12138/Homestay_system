@@ -49,5 +49,21 @@ export const userAPI = {
       method: 'put',
       data
     })
+  },
+  
+  resetPassword(id, password) {
+    return request({
+      url: `/api/user/admin/reset-password/${id}`,
+      method: 'post',
+      data: { newPassword: password }
+    })
+  },
+  
+  adminList(params) {
+    return request({
+      url: '/api/user/admin/list',
+      method: 'get',
+      params
+    })
   }
 }

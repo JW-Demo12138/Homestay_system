@@ -12,6 +12,9 @@
         <result column="pay_time" property="payTime" jdbcType="TIMESTAMP"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="guest_name" property="guestName" jdbcType="VARCHAR"/>
+        <result column="guest_phone" property="guestPhone" jdbcType="VARCHAR"/>
+        <result column="guest_email" property="guestEmail" jdbcType="VARCHAR"/>
     </resultMap>
     
     <resultMap id="OrderWithHomestayMap" type="com.homestay.entity.Order" extends="BaseResultMap">
@@ -21,6 +24,19 @@
             <result column="h_address" property="address"/>
             <result column="h_image_url" property="imageUrl"/>
             <result column="h_owner_id" property="ownerId"/>
+        </association>
+        <association property="experience" javaType="com.homestay.entity.Experience">
+            <id column="e_id" property="id"/>
+            <result column="e_name" property="name"/>
+            <result column="e_location" property="location"/>
+            <result column="e_image_url" property="imageUrl"/>
+        </association>
+        <association property="user" javaType="com.homestay.entity.User">
+            <id column="u_id" property="id"/>
+            <result column="u_username" property="username"/>
+            <result column="u_phone" property="phone"/>
+            <result column="u_email" property="email"/>
+            <result column="u_name" property="name"/>
         </association>
     </resultMap>
     
@@ -108,5 +124,83 @@
         <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
             AND o.check_in_date &gt;= #{startDate} AND o.check_out_date &lt;= #{endDate}
         </if>
+    </select>
+    
+    <select id="selectAdminOrders" resultMap="OrderWithHomestayMap">
+        SELECT 
+            o.*,
+            h.id as h_id,
+            h.name as h_name,
+            h.address as h_address,
+            h.image_url as h_image_url,
+            h.owner_id as h_owner_id,
+            e.id as e_id,
+            e.name as e_name,
+            e.location as e_location,
+            e.image_url as e_image_url,
+            u.id as u_id,
+            u.username as u_username,
+            u.phone as u_phone,
+            u.email as u_email,
+            u.name as u_name
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        LEFT JOIN experience e ON o.experience_id = e.id
+        LEFT JOIN user u ON o.user_id = u.id
+        <where>
+            <if test="status != null and status != ''">
+                o.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                <if test="status != null and status != ''">AND</if>
+                (u.username LIKE CONCAT('%', #{keyword}, '%') 
+                OR u.phone LIKE CONCAT('%', #{keyword}, '%') 
+                OR u.email LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+        LIMIT #{start}, #{pageSize}
+    </select>
+    
+    <select id="countAdminOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        LEFT JOIN user u ON o.user_id = u.id
+        <where>
+            <if test="status != null and status != ''">
+                o.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                <if test="status != null and status != ''">AND</if>
+                (u.username LIKE CONCAT('%', #{keyword}, '%') 
+                OR u.phone LIKE CONCAT('%', #{keyword}, '%') 
+                OR u.email LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectOrderByIdWithRelations" resultMap="OrderWithHomestayMap">
+        SELECT 
+            o.*,
+            h.id as h_id,
+            h.name as h_name,
+            h.address as h_address,
+            h.image_url as h_image_url,
+            h.owner_id as h_owner_id,
+            e.id as e_id,
+            e.name as e_name,
+            e.location as e_location,
+            e.image_url as e_image_url,
+            u.id as u_id,
+            u.username as u_username,
+            u.phone as u_phone,
+            u.email as u_email,
+            u.name as u_name
+        FROM `order` o
+        LEFT JOIN homestay h ON o.homestay_id = h.id
+        LEFT JOIN experience e ON o.experience_id = e.id
+        LEFT JOIN user u ON o.user_id = u.id
+        WHERE o.id = #{id}
     </select>
 </mapper>

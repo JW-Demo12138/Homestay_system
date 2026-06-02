@@ -232,4 +232,17 @@ public class UserServiceImpl implements UserService {
         }
         return Result.error("更新用户状态失败");
     }
+
+    @Override
+    public Result resetUserPassword(Long id, String newPassword) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        if (userMapper.updateById(user) > 0) {
+            return Result.success("重置密码成功");
+        }
+        return Result.error("重置密码失败");
+    }
 }

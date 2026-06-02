@@ -2,7 +2,6 @@ package com.homestay.service;
 
 import com.homestay.entity.Rating;
 import com.homestay.utils.Result;
-
 import java.util.Map;
 
 /**
@@ -41,4 +40,35 @@ public interface RatingService {
      */
     Result getHomestayAverageRating(Long homestayId);
 
+    /**
+     * 获取所有评分列表（管理员）
+     * <p>
+     * 管理员获取所有评分列表，支持分页和筛选
+     *
+     * @param params 查询参数，包含分页信息和筛选条件
+     * @return Result 包含评分列表的响应对象
+     */
+    Result getAllRatings(Map<String, Object> params);
+
+    /**
+     * 获取所有评分列表（管理员）- 带分页参数
+     * <p>
+     * 管理员获取所有评分列表，支持分页和关键词搜索
+     *
+     * @param page 页码
+     * @param size 每页大小
+     * @param keyword 搜索关键词
+     * @return Result 包含评分列表的响应对象
+     */
+    Result getAllRatings(Integer page, Integer size, String keyword);
+
+    /**
+     * 管理员删除违规评价
+     * <p>
+     * 管理员可以删除违规的评价
+     *
+     * @param ratingId 评分ID
+     * @return Result 删除结果的响应对象
+     */
+    Result deleteRating(Long ratingId);
 }

@@ -273,7 +273,7 @@
     >
       <el-form :model="commentForm" :rules="commentRules" ref="commentFormRef" label-width="80px">
         <el-form-item label="评分">
-          <el-rate v-model="commentForm.rating" :max="5" show-score score-template="{{ value }}" />
+          <el-rate v-model="commentForm.rating" :max="5" show-score />
         </el-form-item>
         <el-form-item label="评价内容" prop="content">
           <el-input
@@ -300,7 +300,6 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { orderAPI } from '@/api/order'
 import { ratingAPI } from '@/api/rating'
-import { homestayAPI } from '@/api/homestay'
 import { formatPrice } from '@/utils'
 import { ORDER_STATUS_MAP } from '@/config'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -395,7 +394,7 @@ const getStatusType = (status) => {
 const handlePay = async (row) => {
   try {
     await orderAPI.pay(row.id, { payMethod: '微信支付' })
-    ElMessage.success('支付成功')
+    ElMessage.success('支付成功！')
     loadOrders()
   } catch (error) {
     console.error('支付失败:', error)
@@ -411,7 +410,7 @@ const handleCancel = async (row) => {
     })
     
     await orderAPI.cancel(row.id)
-    ElMessage.success('取消成功')
+    ElMessage.success('订单已取消！')
     loadOrders()
   } catch (error) {
     if (error !== 'cancel') {

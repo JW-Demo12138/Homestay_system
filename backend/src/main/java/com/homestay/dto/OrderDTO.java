@@ -21,6 +21,15 @@ public class OrderDTO {
     private String guestName;
     private String guestPhone;
     private String guestEmail;
+    
+    private String orderType;
+    private Long experienceId;
+    private String experienceName;
+    private String experienceImage;
+    private String experienceLocation;
+    private String experienceDate;
+    private String experienceTime;
+    private Integer quantity;
 
     // getset方法
     public Long getId() {
@@ -133,5 +142,69 @@ public class OrderDTO {
 
     public void setGuestEmail(String guestEmail) {
         this.guestEmail = guestEmail;
+    }
+
+    public String getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
+    }
+
+    public Long getExperienceId() {
+        return experienceId;
+    }
+
+    public void setExperienceId(Long experienceId) {
+        this.experienceId = experienceId;
+    }
+
+    public String getExperienceName() {
+        return experienceName;
+    }
+
+    public void setExperienceName(String experienceName) {
+        this.experienceName = experienceName;
+    }
+
+    public String getExperienceImage() {
+        return experienceImage;
+    }
+
+    public void setExperienceImage(String experienceImage) {
+        this.experienceImage = experienceImage;
+    }
+
+    public String getExperienceLocation() {
+        return experienceLocation;
+    }
+
+    public void setExperienceLocation(String experienceLocation) {
+        this.experienceLocation = experienceLocation;
+    }
+
+    public String getExperienceDate() {
+        return experienceDate;
+    }
+
+    public void setExperienceDate(String experienceDate) {
+        this.experienceDate = experienceDate;
+    }
+
+    public String getExperienceTime() {
+        return experienceTime;
+    }
+
+    public void setExperienceTime(String experienceTime) {
+        this.experienceTime = experienceTime;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }

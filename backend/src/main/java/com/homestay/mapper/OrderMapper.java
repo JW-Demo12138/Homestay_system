@@ -75,4 +75,36 @@ public interface OrderMapper extends BaseMapper<Order> {
                                          @Param("homestayName") String homestayName,
                                          @Param("startDate") String startDate,
                                          @Param("endDate") String endDate);
+                                         
+    /**
+     * 管理员查询订单列表（关联民宿信息）
+     * 
+     * @param status 订单状态
+     * @param keyword 关键词（顾客姓名、电话、邮箱）
+     * @param start 起始索引
+     * @param pageSize 每页大小
+     * @return List<Order> 订单列表
+     */
+    List<Order> selectAdminOrders(@Param("status") String status,
+                                   @Param("keyword") String keyword,
+                                   @Param("start") Integer start,
+                                   @Param("pageSize") Integer pageSize);
+                                   
+    /**
+     * 管理员查询订单总数
+     * 
+     * @param status 订单状态
+     * @param keyword 关键词
+     * @return int 订单总数
+     */
+    int countAdminOrders(@Param("status") String status,
+                         @Param("keyword") String keyword);
+                         
+    /**
+     * 根据订单ID查询订单详情（关联民宿、体验项目、用户信息）
+     * 
+     * @param id 订单ID
+     * @return Order 订单对象（包含关联信息）
+     */
+    Order selectOrderByIdWithRelations(@Param("id") Long id);
 }

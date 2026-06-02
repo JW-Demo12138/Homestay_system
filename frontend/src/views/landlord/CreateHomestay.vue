@@ -589,8 +589,6 @@ const setCoverImage = (image) => {
   console.log('设置封面:', image)
 }
 
-
-
 // 表单验证规则
 const rules = {
   name: [

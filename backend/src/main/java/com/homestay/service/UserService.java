@@ -82,4 +82,15 @@ public interface UserService {
     Result deleteUserByAdmin(Long id);
 
     Result updateUserStatus(Long id, Integer status);
+
+    /**
+     * 管理员重置用户密码
+     * <p>
+     * 管理员可以直接重置指定用户的密码，无需验证旧密码
+     * 
+     * @param id 用户ID
+     * @param newPassword 新密码
+     * @return Result 重置结果的响应对象
+     */
+    Result resetUserPassword(Long id, String newPassword);
 }
